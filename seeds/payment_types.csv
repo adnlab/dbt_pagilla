@@ -1,5 +1,0 @@
-payment_method,payment_type_label,is_digital
-credit_card,Credit Card,true
-bank_transfer,Bank Transfer,true
-gift_card,Gift Card,false
-coupon,Coupon,false

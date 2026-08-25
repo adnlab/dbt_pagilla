@@ -1,7 +1,7 @@
 -- SINGULAR test: a plain SQL query that must return ZERO rows to pass.
--- Here we assert no order ever has a negative amount.
+-- Here we assert no payment ever has a negative amount.
 select
-    order_id,
+    payment_id,
     amount
-from {{ ref('fct_sales') }}
+from {{ ref('fct_payments') }}
 where amount < 0

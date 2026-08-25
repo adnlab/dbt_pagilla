@@ -275,7 +275,7 @@ layout: section
 ```yaml
 services:
   postgres:            # the warehouse
-    image: postgres:16
+    image: postgres:18
     ports: ["5432:5432"]
 
   dbt:                 # dbt Core itself
@@ -497,11 +497,11 @@ layout: section
 
   ```yaml
   sources:
-    - name: raw
-      schema: raw
+    - name: pagila
+      schema: public
       tables:
-        - name: customers
-        - name: orders
+        - name: customer
+        - name: payment
   ```
   </div>
 
@@ -511,8 +511,8 @@ layout: section
   <div class="box-h">3 · Reference in SQL</div>
 
   ```sql
-  -- not: from raw.orders
-  from {{ source('raw','orders') }}
+  -- not: from public.payment
+  from {{ source('pagila','payment') }}
 
   -- not: from dev.stg_customers
   from {{ ref('stg_customers') }}
@@ -544,11 +544,11 @@ layout: section
 <div class="box-h">// The DAG dbt infers</div>
 
 <div class="flow" style="line-height:2.2">
-[<b>source</b>: raw.books]<br>
+[<b>source</b>: pagila.payment]<br>
 &nbsp;&nbsp;↓<br>
-[<b>view</b>: stg_books]<br>
+[<b>view</b>: stg_payments]<br>
 &nbsp;&nbsp;↓<br>
-[<b>table</b>: fct_sales]
+[<b>table</b>: fct_payments]
 </div>
 
 <div class="mt-3 muted text-sm">No manifest to maintain by hand — the references <i>are</i> the graph.</div>
@@ -624,19 +624,19 @@ layout: section
 <div class="grid grid-cols-2 gap-8 mt-2 items-start">
 
 <div class="card tk">
-<div class="box-h">// models/fct_events.sql</div>
+<div class="box-h">// models/fct_payments.sql</div>
 
 ```sql
 {{ config(
   materialized='incremental',
-  unique_key='event_id'
+  unique_key='payment_id'
 ) }}
 
-select * from {{ source('raw','events') }}
+select * from {{ ref('stg_payments') }}
 
 {% if is_incremental() %}
   -- only rows newer than what we have
-  where event_ts > (select max(event_ts) from {{ this }})
+  where payment_date > (select max(payment_date) from {{ this }})
 {% endif %}
 ```
 </div>
@@ -665,16 +665,16 @@ Load a seed, declare a source, and materialize a model — watch the DAG come al
 # 1. load a tiny static lookup CSV
 dbt seed
 
-# 2. build a staging view + a fact table
-dbt run --select stg_customers fct_sales
+# 2. build staging views + dimension tables
+dbt run --select stg_customers dim_customers
 
-# 3. run only incrementally
-dbt run --select fct_events        # full first time
-dbt run --select fct_events        # delta only the 2nd time
+# 3. run the incremental fact (~51k rows)
+dbt run --select fct_payments      # full first time
+dbt run --select fct_payments      # delta only the 2nd time
 ```
 </div>
 
-<div class="mt-5 flow muted">Check Postgres after each step: <code>dev.stg_customers</code> is a <b class="tk">view</b>, <code>dev.fct_sales</code> is a <b class="tk">table</b>.</div>
+<div class="mt-5 flow muted">Check Postgres after each step: <code>dev.stg_customers</code> is a <b class="tk">view</b>, <code>dev.dim_customers</code> is a <b class="tk">table</b>.</div>
 
 ---
 layout: section
@@ -699,7 +699,7 @@ layout: section
 
 ```sql
 select *
-from {{ ref('events') }}
+from {{ ref('stg_payments') }}
 {% if is_incremental() %}
   where date > (select max(date) from {{ this }})
 {% endif %}
@@ -734,16 +734,15 @@ from {{ ref('orders') }}
 <div class="grid grid-cols-2 gap-8 mt-2 items-start">
 
 <div class="card tk">
-<div class="box-h">// macros/generate_schema_name.sql</div>
+<div class="box-h">// macros/full_name.sql</div>
 
 ```sql
-{% macro generate_schema_name(custom, node) -%}
-  {%- if custom is none -%}
-    {{ target.schema }}
-  {%- else -%}
-    {{ custom | trim }}
-  {%- endif -%}
+{% macro full_name(first_col, last_col) -%}
+  {{ first_col }} || ' ' || {{ last_col }}
 {%- endmacro %}
+
+-- in stg_customers.sql:
+{{ full_name('first_name', 'last_name') }} as full_name
 ```
 </div>
 
@@ -840,7 +839,7 @@ vars:
 <div class="box-h">// use in a model</div>
 
 ```sql
-select * from {{ ref('events') }}
+select * from {{ ref('stg_payments') }}
 where event_date >= '{{ var("start_date") }}'
 {% if var('is_staff_excluded') %}
   and not is_staff
@@ -867,14 +866,14 @@ Write a macro, call it from a model, and re-run with an overridden variable.
 
 ```bash
 # inside: docker compose run --rm dbt bash
-# 1. add macros/cents_to_dollars.sql, use it in a model
-dbt run --select stg_payments
+# 1. add macros/full_name.sql, use it in a model
+dbt run --select stg_customers
 
 # 2. add a post-hook grant, confirm it fired
-dbt run --select fct_sales
+dbt run --select dim_customers
 
 # 3. override a var at runtime
-dbt run --select fct_events --vars '{"start_date":"2025-06-01"}'
+dbt run --select fct_payments --vars '{"start_date":"2022-04-01"}'
 ```
 </div>
 
@@ -985,18 +984,18 @@ where grade < 0 or grade > 100
 <div class="flowrow center mt-2" style="gap:8px">
   <div class="node" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">source<br>raw</div></div>
   <div class="arw sm">▶</div>
-  <div class="node" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">view<br>stg_users</div></div>
+  <div class="node" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">view<br>stg_payments</div></div>
   <div class="arw sm">▶</div>
-  <div class="node solid pop" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">table<br>fct_users</div></div>
+  <div class="node solid pop" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">table<br>fct_payments</div></div>
   <div class="arw sm">▶</div>
   <div class="node" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">dashboards</div></div>
 </div>
 
 <div class="mt-4 grid grid-cols-1 gap-2 flow">
-<div><code>dbt run --select stg_users</code><span class="muted"> — just this one model</span></div>
-<div><code>dbt run --select <b class="tk">+</b>fct_users</code><span class="muted"> — fct_users AND all upstream parents</span></div>
-<div><code>dbt run --select fct_users<b class="tk">+</b></code><span class="muted"> — fct_users AND all downstream children</span></div>
-<div><code>dbt run --select <b class="tk">@</b>fct_users</code><span class="muted"> — parents, the model, and children's parents too</span></div>
+<div><code>dbt run --select stg_payments</code><span class="muted"> — just this one model</span></div>
+<div><code>dbt run --select <b class="tk">+</b>fct_payments</code><span class="muted"> — fct_payments AND all upstream parents</span></div>
+<div><code>dbt run --select fct_payments<b class="tk">+</b></code><span class="muted"> — fct_payments AND all downstream children</span></div>
+<div><code>dbt run --select <b class="tk">@</b>fct_payments</code><span class="muted"> — parents, the model, and children's parents too</span></div>
 <div><code>dbt build --select tag:daily</code><span class="muted"> — run + test everything tagged daily</span></div>
 </div>
 
@@ -1028,10 +1027,10 @@ dbt docs serve --host 0.0.0.0  # UI + lineage :8080
 
 ```yaml
 models:
-  - name: fct_sales
-    description: "One row per completed order."
+  - name: fct_payments
+    description: "One row per payment."
     columns:
-      - name: order_id
+      - name: payment_id
         description: "Primary key."
         data_tests: [unique, not_null]
 ```
@@ -1057,7 +1056,7 @@ dbt test
 dbt snapshot
 
 # 3. build + run + test in one shot
-dbt build --select +fct_sales
+dbt build --select +fct_payments
 
 # 4. generate and open the lineage docs
 dbt docs generate && dbt docs serve --host 0.0.0.0

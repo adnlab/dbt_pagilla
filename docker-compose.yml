@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16
+    image: postgres:18   # Pagila's current dump uses uuidv7() (Postgres 18+)
     container_name: dbt_class_pg
     environment:
       POSTGRES_USER: dbt
@@ -9,8 +9,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      # Any .sql here runs once, on first boot, to seed the "raw" layer.
+      # Postgres 18 images store data under /var/lib/postgresql (versioned subdir)
+      - pgdata:/var/lib/postgresql
+      # Any .sql here runs once, on first boot, to load the Pagila "raw" layer.
       - ./docker/init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dbt -d analytics"]

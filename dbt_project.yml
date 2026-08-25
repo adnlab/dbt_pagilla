@@ -14,9 +14,9 @@ test-paths: ["tests"]
 target-path: "target"
 clean-targets: ["target", "dbt_packages"]
 
-# Global variables (override at runtime with --vars). Used by fct_events.
+# Global variables (override at runtime with --vars). Used by fct_payments.
 vars:
-  start_date: '2024-01-01'
+  start_date: '2022-01-01'   # Pagila payments span 2022
 
 # Per-folder configuration. Folders map to what the models mean:
 #   staging -> lightweight views      marts -> physical tables
@@ -30,7 +30,3 @@ models:
       +materialized: table
     example:
       +materialized: view
-
-seeds:
-  dbt_class:
-    +schema: dev

@@ -1,58 +1,62 @@
 version: 2
 
 # ---------------------------------------------------------------------
-# SOURCES — declare the raw tables so dbt can reference them safely and
-# draw them into the DAG. Referenced as {{ source('raw', 'orders') }}.
+# SOURCES — the Pagila sample database, pre-loaded into the `public`
+# schema by our Docker init scripts. Declaring them here lets dbt draw
+# them into the DAG and reference them as {{ source('pagila', 'rental') }}.
 # ---------------------------------------------------------------------
 sources:
-  - name: raw
-    description: "Landing zone loaded by our (simulated) ingestion tool."
-    schema: raw
+  - name: pagila
+    description: "Pagila — the standard Postgres sample DB (a DVD rental store)."
+    schema: public
     tables:
-      - name: customers
-      - name: orders
-      - name: payments
-      - name: events
+      - name: customer
+      - name: film
+      - name: category
+      - name: film_category
+      - name: inventory
+      - name: rental
+      - name: payment
+      - name: address
+      - name: city
+      - name: country
 
 # ---------------------------------------------------------------------
-# MODELS — descriptions (feed the docs site) + generic tests (data quality)
+# MODELS — descriptions (feed the docs site) + generic tests
 # ---------------------------------------------------------------------
 models:
   - name: stg_customers
-    description: "One cleaned row per customer."
+    description: "One cleaned row per customer, with a stitched full_name."
     columns:
       - name: customer_id
         description: "Primary key."
-        data_tests:
-          - unique
-          - not_null
+        data_tests: [unique, not_null]
 
-  - name: stg_orders
-    description: "One cleaned row per order."
+  - name: stg_films
+    description: "One cleaned row per film."
     columns:
-      - name: order_id
+      - name: film_id
+        data_tests: [unique, not_null]
+      - name: rating
+        description: "MPAA rating."
         data_tests:
-          - unique
-          - not_null
+          - accepted_values:
+              values: ['G', 'PG', 'PG-13', 'R', 'NC-17']
+
+  - name: stg_payments
+    description: "One row per payment."
+    columns:
+      - name: payment_id
+        data_tests: [unique, not_null]
       - name: customer_id
         description: "Must point at a real customer."
         data_tests:
           - relationships:
               to: ref('stg_customers')
               field: customer_id
-      - name: status
-        data_tests:
-          - accepted_values:
-              values: ['placed', 'shipped', 'completed', 'returned']
 
-  - name: stg_payments
-    description: "One row per payment, amount converted to dollars."
+  - name: stg_rentals
+    description: "One row per rental."
     columns:
-      - name: payment_id
-        data_tests:
-          - unique
-          - not_null
-      - name: payment_method
-        data_tests:
-          - accepted_values:
-              values: ['credit_card', 'bank_transfer', 'gift_card', 'coupon']
+      - name: rental_id
+        data_tests: [unique, not_null]
