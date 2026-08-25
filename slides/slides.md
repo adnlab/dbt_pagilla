@@ -52,7 +52,7 @@ layout: section
   <div><span class="num">06</span> Best practices + synthesis</div>
 </div>
 
-<div class="mt-10 muted">Every module ends with a <span class="tk">▶ LAB CHECKPOINT</span> you run against a local Dockerized Postgres.</div>
+<div class="mt-10 muted">Every module ends with a <span class="tk">▶ LAB CHECKPOINT</span> you run inside a fully Dockerized dbt + Postgres stack.</div>
 
 ---
 layout: section
@@ -214,54 +214,53 @@ layout: section
 
 # 02 — Scaffolding<br>Setup & First Run
 
-<div class="mt-6 muted flow">Local <b class="tk">Postgres in Docker</b> + dbt Core. Get everyone to a green <code>dbt debug</code>.</div>
+<div class="mt-6 muted flow"><b class="tk">Postgres + dbt, both in Docker</b>. Get everyone to a green <code>dbt debug</code>.</div>
 
 ---
 
-## The Stack: Postgres in Docker
+## The Stack: Postgres + dbt in Docker
 
 <div class="grid grid-cols-2 gap-8 mt-2">
 
 <div class="card">
-<div class="box-h">// docker-compose.yml</div>
+<div class="box-h">// docker-compose.yml — two services</div>
 
 ```yaml
 services:
-  postgres:
+  postgres:            # the warehouse
     image: postgres:16
-    environment:
-      POSTGRES_USER: dbt
-      POSTGRES_PASSWORD: dbt
-      POSTGRES_DB: analytics
     ports: ["5432:5432"]
-    volumes: ["pgdata:/var/lib/postgresql/data"]
-volumes: { pgdata: {} }
+
+  dbt:                 # dbt Core itself
+    build: ./docker/dbt
+    profiles: ["dbt"]
+    environment:
+      DBT_HOST: postgres   # reach pg over
+    volumes: [".:/usr/app"]  # the network
+    working_dir: /usr/app
 ```
 </div>
 
 <div class="card tk">
-<div class="box-h">// Install dbt (with uv)</div>
+<div class="box-h">// Everything runs in a container</div>
 
 ```bash
-uv add dbt-core dbt-postgres
+# build images + start Postgres
+docker compose up -d
 
-# initialise the project
-dbt init dbt_class
+# drop into the dbt container…
+docker compose run --rm \
+  --service-ports dbt bash
 
-# verify the warehouse connection
-dbt debug
+# …now dbt runs in here:
+dbt debug   # "All checks passed!"
 ```
 </div>
 
 </div>
 
 <div class="mt-5 lab">
-Bring up the database, then confirm dbt can reach it:
-
-```bash
-docker compose up -d      # Postgres now on localhost:5432
-dbt debug                 # expect: "All checks passed!"
-```
+No local Python needed — dbt lives in its own image. Postgres is reachable at host <code>postgres</code> over the compose network. Every <code>dbt …</code> below runs <b class="tk">inside this shell</b>.
 </div>
 
 ---
@@ -402,9 +401,12 @@ as (
 Build it and inspect the result in Postgres:
 
 ```bash
+# inside: docker compose run --rm dbt bash
 dbt run --select my_first_model
-# then in psql:
-#   select * from dev.my_first_model;
+# then from another shell:
+#   docker exec -it dbt_class_pg \
+#     psql -U dbt -d analytics \
+#     -c 'select * from dev.my_first_model;'
 ```
 Open <code>target/compiled/…/my_first_model.sql</code> — see the raw SQL dbt generated.
 </div>
@@ -597,6 +599,7 @@ select * from {{ source('raw','events') }}
 Load a seed, declare a source, and materialize a model — watch the DAG come alive.
 
 ```bash
+# inside: docker compose run --rm dbt bash
 # 1. load a tiny static lookup CSV
 dbt seed
 
@@ -762,6 +765,7 @@ dbt run --vars '{"start_date": "2025-01-01"}'
 Write a macro, call it from a model, and re-run with an overridden variable.
 
 ```bash
+# inside: docker compose run --rm dbt bash
 # 1. add macros/cents_to_dollars.sql, use it in a model
 dbt run --select stg_payments
 
@@ -875,8 +879,8 @@ where grade < 0 or grade > 100
 <div class="box-h">// generate &amp; serve the docs site</div>
 
 ```bash
-dbt docs generate   # build the manifest
-dbt docs serve      # browsable UI + lineage
+dbt docs generate            # build the manifest
+dbt docs serve --host 0.0.0.0  # UI + lineage :8080
 ```
 
 <div class="mt-4">
@@ -912,6 +916,7 @@ models:
 Test, snapshot, and publish docs for your pipeline.
 
 ```bash
+# inside: docker compose run --rm --service-ports dbt bash
 # 1. run every generic + singular test
 dbt test
 
@@ -922,7 +927,7 @@ dbt snapshot
 dbt build --select +fct_sales
 
 # 4. generate and open the lineage docs
-dbt docs generate && dbt docs serve
+dbt docs generate && dbt docs serve --host 0.0.0.0
 ```
 </div>
 

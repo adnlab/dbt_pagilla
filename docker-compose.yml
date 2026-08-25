@@ -18,5 +18,22 @@ services:
       timeout: 5s
       retries: 5
 
+  # dbt Core itself, containerized. Not started by `docker compose up`
+  # (it's behind a profile); you invoke it on demand with `docker compose run`.
+  dbt:
+    build: ./docker/dbt
+    profiles: ["dbt"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DBT_PROFILES_DIR: /usr/app   # use the profiles.yml in the project
+      DBT_HOST: postgres           # reach Postgres over the compose network
+    volumes:
+      - .:/usr/app                 # live-mount the project
+    working_dir: /usr/app
+    ports:
+      - "8080:8080"                # for `dbt docs serve`
+
 volumes:
   pgdata: {}

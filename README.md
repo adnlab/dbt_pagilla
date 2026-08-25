@@ -1,31 +1,39 @@
 # dbt Class — dbt Core + Postgres + Docker
 
 A tiny, fully-runnable dbt project for a beginner data-engineering class.
-Postgres runs in Docker; you run dbt Core from your machine against it.
+**Both Postgres and dbt Core run in Docker** — no local Python required.
 Every step here maps to a **▶ LAB CHECKPOINT** in [`slides/`](slides/).
+
+📊 Slides: https://thosangs.github.io/dbt_lecture/
 
 ```
 raw (Docker Postgres)  ──sources──▶  staging (views)  ──▶  marts (tables)
       seeds ─────────────ref─────────────┘                 tests · snapshots · docs
 ```
 
-## 0. One-time setup
+## The two containers
+
+| Service | What it is |
+|---|---|
+| `postgres` | The warehouse. Raw layer auto-loaded on first boot. Started by `docker compose up`. |
+| `dbt` | dbt Core + the Postgres adapter, in its own image. Invoked on demand with `docker compose run` (it's behind a compose profile, so `up` doesn't start it). |
+
+## 0. Bring up the stack
 
 ```bash
-# Python env with dbt + the Postgres adapter
-uv venv --python 3.11
-uv pip install -r requirements.txt     # or: uv add dbt-core dbt-postgres
-source .venv/bin/activate
+docker compose up -d          # build images + start Postgres
 
-# tell dbt to use the profiles.yml in this folder
-export DBT_PROFILES_DIR=$(pwd)
+# drop into the dbt container — every dbt command runs in here:
+docker compose run --rm --service-ports dbt bash
 ```
 
-## 1. Module 02 — bring up the warehouse & connect
+You are now inside the container. Run the labs below from this shell.
+(One-off without a shell: `docker compose run --rm dbt dbt debug`.)
+
+## 1. Module 02 — connect & first run
 
 ```bash
-docker compose up -d      # Postgres on localhost:5432, raw layer auto-loaded
-dbt debug                 # expect: "All checks passed!"
+dbt debug                        # expect: "All checks passed!"
 dbt run --select my_first_model
 ```
 
@@ -41,21 +49,20 @@ dbt run --select fct_events                 # incremental: delta only (INSERT 0 
 ## 3. Module 04 — dynamic SQL (macro, hooks, vars)
 
 ```bash
-dbt run --select stg_payments               # uses the cents_to_dollars() macro + seed
-# every model's +post-hook grants SELECT to the "reporter" role
+dbt run --select stg_payments               # uses cents_to_dollars() macro + seed
 dbt run --select fct_events --vars '{"start_date": "2024-06-01"}'
 ```
 
 ## 4. Module 05 — trust: tests, history, docs
 
 ```bash
-dbt test                      # 16 generic + singular tests
-dbt snapshot                  # SCD Type 2 history of raw.customers
-dbt build --select +fct_sales # run + test the model and everything upstream
-dbt docs generate && dbt docs serve   # lineage graph at http://localhost:8080
+dbt test                       # 16 generic + singular tests
+dbt snapshot                   # SCD Type 2 history of raw.customers
+dbt build --select +fct_sales  # run + test the model and everything upstream
+dbt docs generate && dbt docs serve --host 0.0.0.0   # lineage at http://localhost:8080
 ```
 
-## Peek at the results
+## Peek at the results (from your host, another terminal)
 
 ```bash
 docker exec -it dbt_class_pg psql -U dbt -d analytics \
@@ -65,10 +72,11 @@ docker exec -it dbt_class_pg psql -U dbt -d analytics \
 ## Project layout
 
 ```
-dbt_project.yml        project config (paths, vars, post-hook, materializations)
-profiles.yml           Postgres connection (the "keycard")
-docker-compose.yml     Postgres 16
+docker-compose.yml     postgres + dbt services
 docker/init/           SQL that seeds the raw layer on first boot -> dbt SOURCES
+docker/dbt/Dockerfile  the dbt Core + Postgres adapter image
+dbt_project.yml        project config (paths, vars, post-hook, materializations)
+profiles.yml           connection; host is env-driven (container vs local)
 seeds/                 payment_types.csv (a tiny static lookup)
 models/
   example/             my_first_model.sql  (hello world, table)
@@ -83,7 +91,18 @@ slides/                the lecture deck (Slidev)
 ## Reset / teardown
 
 ```bash
-dbt clean                       # remove target/
-docker compose down             # stop Postgres (keeps data volume)
+docker compose down             # stop everything (keeps data volume)
 docker compose down -v          # stop + wipe data (fresh raw layer next boot)
+```
+
+## Optional: run dbt on your host instead of in Docker
+
+`profiles.yml` reads `DBT_HOST` (defaults to `localhost`), so a host install works too:
+
+```bash
+uv venv --python 3.11 && uv pip install -r requirements.txt
+source .venv/bin/activate
+export DBT_PROFILES_DIR=$(pwd)
+docker compose up -d postgres   # just the DB
+dbt debug
 ```
