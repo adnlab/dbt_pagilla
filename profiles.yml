@@ -1,0 +1,16 @@
+# How dbt connects to the warehouse (the "keycard").
+# dbt looks for this file in ~/.dbt/ by default — to use THIS local copy run:
+#   export DBT_PROFILES_DIR=$(pwd)
+# ...or add  --profiles-dir .  to every dbt command.
+dbt_class:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: dbt
+      password: dbt
+      dbname: analytics
+      schema: dev          # models land in analytics.dev.*
+      threads: 4

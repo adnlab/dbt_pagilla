@@ -1,0 +1,36 @@
+name: 'dbt_class'
+version: '1.0.0'
+config-version: 2
+
+# This must match the top-level key in profiles.yml.
+profile: 'dbt_class'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+# Global variables (override at runtime with --vars). Used by fct_events.
+vars:
+  start_date: '2024-01-01'
+
+# Per-folder configuration. Folders map to what the models mean:
+#   staging -> lightweight views      marts -> physical tables
+models:
+  dbt_class:
+    # Module 04 demo: grant read access right after each model is built.
+    +post-hook: "grant select on {{ this }} to reporter"
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+    example:
+      +materialized: view
+
+seeds:
+  dbt_class:
+    +schema: dev

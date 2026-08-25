@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: fct_sales
+    description: "One row per order — the BI-ready sales fact table."
+    columns:
+      - name: order_id
+        description: "Primary key."
+        data_tests:
+          - unique
+          - not_null
+      - name: amount
+        description: "Total paid for the order, in dollars."
+        data_tests:
+          - not_null
+      - name: status
+        data_tests:
+          - accepted_values:
+              values: ['placed', 'shipped', 'completed', 'returned']
+
+  - name: fct_events
+    description: "Incrementally-built event stream."
+    columns:
+      - name: event_id
+        data_tests:
+          - unique
+          - not_null

@@ -1,0 +1,5 @@
+# dbt Core + the Postgres adapter (adapter pulls in the matching dbt-core).
+# Install with pip:  pip install -r requirements.txt
+# ...or with uv:     uv add dbt-core dbt-postgres
+dbt-core>=1.9,<2.0
+dbt-postgres>=1.9,<2.0

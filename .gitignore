@@ -1,0 +1,18 @@
+# dbt
+target/
+dbt_packages/
+logs/
+.user.yml
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# node / slidev
+node_modules/
+slides/dist/
+slides/.slidev/
+
+# os / editor
+.DS_Store
