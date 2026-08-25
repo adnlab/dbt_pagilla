@@ -62,6 +62,8 @@ layout: section
 
 # 01 — The Why<br>& dbt Foundations
 
+<div class="ghostnum">01</div>
+
 <div class="mt-6 muted flow">Before we install anything: <b class="tk">what problem is dbt even solving?</b></div>
 
 ---
@@ -127,36 +129,56 @@ WHERE ...;
 
 </div>
 
-<div class="mt-5 flow"><b class="tk">dbt owns the "T".</b> The warehouse does the heavy lifting; dbt tells it what to build and in what order.</div>
+<div class="flowrow center mt-5" style="gap:10px">
+  <div class="badge amber">ETL</div>
+  <div class="node" style="text-align:center;padding:7px 12px"><div class="t">Extract</div></div>
+  <div class="arw sm">▶</div>
+  <div class="node paper" style="text-align:center;padding:7px 12px"><div class="t">Transform</div><div class="s">outside server</div></div>
+  <div class="arw sm">▶</div>
+  <div class="node" style="text-align:center;padding:7px 12px"><div class="t">Load</div></div>
+  <div class="muted" style="margin-left:8px">heavy data crosses the network twice</div>
+</div>
+
+<div class="flowrow center mt-2" style="gap:10px">
+  <div class="badge">ELT</div>
+  <div class="node" style="text-align:center;padding:7px 12px"><div class="t">Extract</div></div>
+  <div class="arw sm">▶</div>
+  <div class="node" style="text-align:center;padding:7px 12px"><div class="t">Load</div></div>
+  <div class="arw sm">▶</div>
+  <div class="node solid" style="text-align:center;padding:7px 12px"><div class="t">Transform</div><div class="s">inside warehouse · dbt</div></div>
+  <div class="tk" style="margin-left:8px;font-weight:700">dbt owns the "T"</div>
+</div>
 
 ---
 
 ## What Is dbt? (It Is NOT a Database)
 
-<div class="flow mt-2 mb-4">Three kinds of files go in → one dependency-aware graph of SQL comes out.</div>
+<div class="flow mt-1 mb-5 muted">Three kinds of files go in <span class="tk">▸</span> one dependency-aware graph of SQL comes out.</div>
 
-<div class="grid grid-cols-7 gap-3 items-center mt-2">
+<div class="flowrow center">
 
-<div class="card col-span-2">
-<code>model.sql</code><br><span class="muted text-sm">Transformation logic (SELECT)</span>
-<div class="mt-3"><code>schema.yml</code><br><span class="muted text-sm">Tests &amp; docs</span></div>
-<div class="mt-3"><code>macro.sql</code><br><span class="muted text-sm">Jinja functions</span></div>
+  <div class="stack" style="flex:0 0 30%">
+    <div class="node"><div class="t">model.sql</div><div class="s">Transformation logic — SELECT</div></div>
+    <div class="node"><div class="t">schema.yml</div><div class="s">Tests &amp; docs</div></div>
+    <div class="node"><div class="t">macro.sql</div><div class="s">Jinja functions</div></div>
+  </div>
+
+  <div class="arw">▶</div>
+
+  <div class="node solid big pop" style="flex:0 0 26%; text-align:center; align-items:center">
+    <div class="t">dbt&nbsp;compile</div>
+    <div class="s">the engine</div>
+  </div>
+
+  <div class="arw">▶</div>
+
+  <div class="node big" style="flex:1; align-items:center; text-align:center">
+    <div class="t">RAW<br>EXECUTABLE<br>SQL</div>
+  </div>
+
 </div>
 
-<div class="text-center tk text-3xl">→</div>
-
-<div class="card tk col-span-2 text-center">
-<div class="box-h">// COMPILE ENGINE</div>
-<div class="flow text-xl tk" style="font-family:'JetBrains Mono'">dbt compile</div>
-</div>
-
-<div class="text-center tk text-3xl">→</div>
-
-<div class="slab col-span-1 text-center" style="font-size:0.8rem">RAW EXECUTABLE SQL</div>
-
-</div>
-
-<blockquote class="mt-5">dbt is a <b>software-engineering framework</b> that compiles SQL + Jinja + YAML into a <b>Directed Acyclic Graph (DAG)</b> — then hands warehouse-native SQL to your database.</blockquote>
+<blockquote class="mt-6">dbt is <b>NOT a database</b>. It is a <b>software-engineering framework</b> that compiles SQL + Jinja + YAML into a <b>Directed Acyclic Graph</b> — then hands warehouse-native SQL to your database to run.</blockquote>
 
 ---
 
@@ -183,10 +205,33 @@ WHERE ...;
 </div>
 
 <div class="mt-5 box-h">// One dbt, many warehouses — via ADAPTERS</div>
-<div class="flow mt-2">
-  <code>dbt-postgres</code> · <code>dbt-bigquery</code> · <code>dbt-snowflake</code> · <code>dbt-redshift</code> · <code>dbt-duckdb</code>
+
+<div class="flowrow center mt-2">
+  <div class="node tk" style="flex:0 0 22%; align-items:center; text-align:center">
+    <div class="t">SQL · Jinja<br>· YAML</div>
+    <div class="s">your models</div>
+  </div>
+  <div class="arw">▶</div>
+  <div class="node solid big pop" style="flex:0 0 22%; align-items:center; text-align:center">
+    <div class="t">dbt&nbsp;Core</div>
+    <div class="s">+ adapter</div>
+  </div>
+  <div class="arw">▶</div>
+  <div class="stack" style="flex:1">
+    <div class="colrow">
+      <div class="node" style="text-align:center"><div class="t">Postgres</div></div>
+      <div class="node" style="text-align:center"><div class="t">BigQuery</div></div>
+      <div class="node" style="text-align:center"><div class="t">Snowflake</div></div>
+    </div>
+    <div class="colrow">
+      <div class="node" style="text-align:center"><div class="t">Redshift</div></div>
+      <div class="node" style="text-align:center"><div class="t">DuckDB</div></div>
+      <div class="node" style="text-align:center"><div class="t">Databricks</div></div>
+    </div>
+  </div>
 </div>
-<div class="mt-3 muted">Write once. Swap the adapter, keep the models. <b class="tk">This class targets <code>dbt-postgres</code>.</b></div>
+
+<div class="mt-4 muted">Write once. Swap the adapter, keep the models. <b class="tk">This class targets <code>dbt-postgres</code>.</b></div>
 
 ---
 
@@ -213,6 +258,8 @@ layout: section
 <div class="eyebrow">// Module 02 · 20 min</div>
 
 # 02 — Scaffolding<br>Setup & First Run
+
+<div class="ghostnum">02</div>
 
 <div class="mt-6 muted flow"><b class="tk">Postgres + dbt, both in Docker</b>. Get everyone to a green <code>dbt debug</code>.</div>
 
@@ -348,29 +395,33 @@ dbt_class:
 
 ## The Command Lifecycle
 
-<div class="grid grid-cols-3 gap-6 mt-4">
+<div class="flowrow mt-4">
 
-<div class="card">
-<div class="box-h">// Step 1 — verify power</div>
-<div class="flow tk text-lg">dbt debug</div>
-<div class="mt-3">Tests the <code>profiles.yml</code> connection. Validates credentials &amp; network. <b>No data moved.</b></div>
+  <div class="node pop" style="flex:1">
+    <span class="badge ghost">STEP 1 · VERIFY POWER</span>
+    <div class="t" style="margin:10px 0 6px;color:var(--tk)">dbt debug</div>
+    <div class="s" style="font-size:0.86rem">Tests the <code>profiles.yml</code> connection — credentials &amp; network. <b style="color:#fff">No data moved.</b></div>
+  </div>
+
+  <div class="arw">▶</div>
+
+  <div class="node pop" style="flex:1">
+    <span class="badge ghost">STEP 2 · READ BLUEPRINTS</span>
+    <div class="t" style="margin:10px 0 6px;color:var(--tk)">dbt compile</div>
+    <div class="s" style="font-size:0.86rem">Evaluates Jinja, writes raw SQL to <code>target/compiled/</code>. <b style="color:#fff">Still no data moved.</b></div>
+  </div>
+
+  <div class="arw">▶</div>
+
+  <div class="node solid pop" style="flex:1">
+    <span class="badge ghost" style="border-color:var(--ink);color:var(--ink)">STEP 3 · START MACHINES</span>
+    <div class="t" style="margin:10px 0 6px">dbt run</div>
+    <div class="s" style="font-size:0.86rem">Executes compiled SQL against Postgres — physically builds tables &amp; views.</div>
+  </div>
+
 </div>
 
-<div class="card">
-<div class="box-h">// Step 2 — read blueprints</div>
-<div class="flow tk text-lg">dbt compile</div>
-<div class="mt-3">Reads <code>.sql</code>/<code>.yml</code>, evaluates Jinja, writes raw SQL to <code>target/compiled/</code>. <b>Still no data moved.</b></div>
-</div>
-
-<div class="card tk">
-<div class="box-h">// Step 3 — start machines</div>
-<div class="flow tk text-lg">dbt run</div>
-<div class="mt-3">Executes compiled SQL against Postgres — physically builds your tables &amp; views.</div>
-</div>
-
-</div>
-
-<div class="mt-6 flow"><b class="tk">debug → compile → run.</b> Learn this loop; you'll type it 100× a day.</div>
+<div class="mt-6 slab" style="display:inline-block">debug <span class="tk">▶</span> compile <span class="tk">▶</span> run &nbsp;— learn this loop; you'll type it 100× a day.</div>
 
 ---
 
@@ -421,46 +472,52 @@ layout: section
 
 # 03 — Pipelines<br>Seeds · Sources · Materializations
 
+<div class="ghostnum">03</div>
+
 <div class="mt-6 muted flow">How data <b class="tk">enters</b>, how dbt <b class="tk">references</b> it, and how you <b class="tk">shape</b> it.</div>
 
 ---
 
 ## Raw Materials: Seeds & Sources
 
-<div class="grid grid-cols-3 gap-4 mt-2 items-start flow text-sm">
+<div class="flowrow mt-2 items-start">
 
-<div class="card">
-<div class="box-h">// External data</div>
+  <div class="card" style="flex:1">
+  <div class="box-h">1 · External data</div>
 
-<b class="tk">Seeds</b> — small static <code>.csv</code> (country codes, mappings) loaded with <code>dbt seed</code>.
+  <b class="tk">Seeds</b> — small static <code>.csv</code> (mappings, lookups) loaded with <code>dbt seed</code>.
 
-<div class="mt-3"><b class="tk">Sources</b> — raw tables already in the warehouse (loaded by ingestion).</div>
-</div>
+  <div class="mt-3"><b class="tk">Sources</b> — raw tables already in the warehouse (loaded by ingestion).</div>
+  </div>
 
-<div class="card">
-<div class="box-h">// YAML binding (sources)</div>
+  <div class="arw">▶</div>
 
-```yaml
-sources:
-  - name: raw_data
-    schema: raw
-    tables:
-      - name: books
-      - name: customers
-```
-</div>
+  <div class="card" style="flex:1">
+  <div class="box-h">2 · YAML binding</div>
 
-<div class="card tk">
-<div class="box-h">// Reference in SQL</div>
+  ```yaml
+  sources:
+    - name: raw
+      schema: raw
+      tables:
+        - name: customers
+        - name: orders
+  ```
+  </div>
 
-```sql
--- instead of: from raw.books
-from {{ source('raw_data','books') }}
+  <div class="arw">▶</div>
 
--- instead of: from dev.customers
-from {{ ref('stg_customers') }}
-```
-</div>
+  <div class="card tk" style="flex:1">
+  <div class="box-h">3 · Reference in SQL</div>
+
+  ```sql
+  -- not: from raw.orders
+  from {{ source('raw','orders') }}
+
+  -- not: from dev.stg_customers
+  from {{ ref('stg_customers') }}
+  ```
+  </div>
 
 </div>
 
@@ -503,31 +560,36 @@ from {{ ref('stg_customers') }}
 
 ## Shaping the Data: 5 Materializations
 
-<div class="grid grid-cols-5 gap-3 mt-3 flow text-sm">
+<div class="grid grid-cols-5 gap-3 mt-3">
 
-<div class="card">
-<div class="box-h">VIEW</div>
-Masquerades a query over real tables. Rebuilt logic each read.
+<div class="iconcard">
+  <span class="glyph">◇</span>
+  <div class="name">View</div>
+  <div class="desc">A saved query over real tables. Rebuilt on every read.</div>
 </div>
 
-<div class="card">
-<div class="box-h">TABLE</div>
-Physical storage, rebuilt from scratch every run.
+<div class="iconcard">
+  <span class="glyph">▦</span>
+  <div class="name">Table</div>
+  <div class="desc">Physical storage, rebuilt from scratch each run.</div>
 </div>
 
-<div class="card tk">
-<div class="box-h">INCREMENTAL</div>
-Appends / merges only new data batches (delta).
+<div class="iconcard" style="border-color:var(--tk);box-shadow:6px 6px 0 var(--tk)">
+  <span class="glyph">Δ</span>
+  <div class="name">Incremental</div>
+  <div class="desc">Appends / merges only new rows (the delta).</div>
 </div>
 
-<div class="card">
-<div class="box-h">EPHEMERAL</div>
-Acts as a CTE — never physically stored.
+<div class="iconcard">
+  <span class="glyph">◈</span>
+  <div class="name">Ephemeral</div>
+  <div class="desc">Inlined as a CTE — never physically stored.</div>
 </div>
 
-<div class="card">
-<div class="box-h">MAT. VIEW</div>
-View logic + auto-refreshing physical storage.
+<div class="iconcard">
+  <span class="glyph">⟳</span>
+  <div class="name">Mat. View</div>
+  <div class="desc">View logic + auto-refreshing physical storage.</div>
 </div>
 
 </div>
@@ -622,6 +684,8 @@ layout: section
 
 # 04 — Dynamic SQL<br>Jinja · Macros · Hooks · Vars
 
+<div class="ghostnum">04</div>
+
 <div class="mt-6 muted flow">Bring <b class="tk">programming</b> into SQL — flexible, reusable, DRY pipelines.</div>
 
 ---
@@ -699,24 +763,61 @@ from {{ ref('orders') }}
 
 ## Hooks & The Execution Order
 
-<div class="flow mt-2 mb-4">Run SQL <b class="tk">around</b> your models — grants, logging, cleanup.</div>
+<div class="flow mt-1 mb-3 muted">Run SQL <b class="tk">around</b> your models — grants, logging, cleanup. Top ▸ bottom = execution order.</div>
 
-<div class="grid grid-cols-2 gap-x-10 gap-y-2 flow">
-<div><b class="tk">on-run-start</b> — once, at the beginning of <code>dbt run</code></div>
-<div><b class="tk">pre-hook</b> — right before a specific model builds</div>
-<div class="slab" style="grid-column:span 2">[ JINJA COMPILATION ] → dbt resolves ref()/macros into raw SQL</div>
-<div class="slab" style="grid-column:span 2"><span class="hi">[ SQL EXECUTION ]</span> the warehouse runs the DDL/DML</div>
-<div><b class="tk">post-hook</b> — right after that model builds (e.g. GRANT)</div>
-<div><b class="tk">on-run-end</b> — once, at the very end of the run</div>
+<div class="svg-wrap mt-1">
+<svg viewBox="0 0 1000 252" width="1000" height="252" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono', monospace">
+  <line x1="46" y1="24" x2="46" y2="228" stroke="#12d3c8" stroke-width="4"/>
+  <!-- rows: 30 66 102 138 174 210 ; bar h=30 -->
+  <!-- 1 on-run-start -->
+  <circle cx="46" cy="30" r="9" fill="#0a0a0a" stroke="#12d3c8" stroke-width="3"/>
+  <text x="46" y="34" fill="#fff" font-size="12px" font-weight="800" text-anchor="middle">1</text>
+  <rect x="72" y="15" width="900" height="30" fill="#141518" stroke="#12d3c8" stroke-width="2"/>
+  <text x="88" y="35" fill="#12d3c8" font-size="16px" font-weight="800">on-run-start</text>
+  <text x="520" y="35" fill="#8b8f96" font-size="14px">once, at the very beginning of the run</text>
+  <!-- 2 pre-hook -->
+  <circle cx="46" cy="66" r="9" fill="#0a0a0a" stroke="#12d3c8" stroke-width="3"/>
+  <text x="46" y="70" fill="#fff" font-size="12px" font-weight="800" text-anchor="middle">2</text>
+  <rect x="72" y="51" width="900" height="30" fill="#141518" stroke="#12d3c8" stroke-width="2"/>
+  <text x="88" y="71" fill="#12d3c8" font-size="16px" font-weight="800">pre-hook</text>
+  <text x="520" y="71" fill="#8b8f96" font-size="14px">right before a specific model builds</text>
+  <!-- 3 JINJA COMPILATION (teal) -->
+  <circle cx="46" cy="102" r="9" fill="#0a0a0a" stroke="#12d3c8" stroke-width="3"/>
+  <text x="46" y="106" fill="#fff" font-size="12px" font-weight="800" text-anchor="middle">3</text>
+  <rect x="72" y="87" width="900" height="30" fill="#12d3c8"/>
+  <text x="88" y="107" fill="#0a0a0a" font-size="16px" font-weight="800">[ JINJA COMPILATION ]</text>
+  <text x="520" y="107" fill="#0a0a0a" font-size="14px">ref() + macros resolve into raw SQL</text>
+  <!-- 4 SQL EXECUTION (white) -->
+  <circle cx="46" cy="138" r="9" fill="#0a0a0a" stroke="#12d3c8" stroke-width="3"/>
+  <text x="46" y="142" fill="#fff" font-size="12px" font-weight="800" text-anchor="middle">4</text>
+  <rect x="72" y="123" width="900" height="30" fill="#f2f2f0"/>
+  <text x="88" y="143" fill="#0a0a0a" font-size="16px" font-weight="800">[ SQL EXECUTION ]</text>
+  <text x="520" y="143" fill="#0a0a0a" font-size="14px">the warehouse runs the DDL / DML</text>
+  <!-- 5 post-hook -->
+  <circle cx="46" cy="174" r="9" fill="#0a0a0a" stroke="#12d3c8" stroke-width="3"/>
+  <text x="46" y="178" fill="#fff" font-size="12px" font-weight="800" text-anchor="middle">5</text>
+  <rect x="72" y="159" width="900" height="30" fill="#141518" stroke="#12d3c8" stroke-width="2"/>
+  <text x="88" y="179" fill="#12d3c8" font-size="16px" font-weight="800">post-hook</text>
+  <text x="520" y="179" fill="#8b8f96" font-size="14px">right after that model (e.g. GRANT)</text>
+  <!-- 6 on-run-end -->
+  <circle cx="46" cy="210" r="9" fill="#0a0a0a" stroke="#12d3c8" stroke-width="3"/>
+  <text x="46" y="214" fill="#fff" font-size="12px" font-weight="800" text-anchor="middle">6</text>
+  <rect x="72" y="195" width="900" height="30" fill="#141518" stroke="#12d3c8" stroke-width="2"/>
+  <text x="88" y="215" fill="#12d3c8" font-size="16px" font-weight="800">on-run-end</text>
+  <text x="520" y="215" fill="#8b8f96" font-size="14px">once, at the very end of the run</text>
+</svg>
 </div>
 
-<div class="card mt-4">
+<div class="grid grid-cols-2 gap-6 mt-3 items-center">
+<div class="card tk">
 
 ```yaml
 models:
   dbt_class:
     +post-hook: "grant select on {{ this }} to reporter"
 ```
+</div>
+<div class="muted">Steps <b class="tk">1</b> &amp; <b class="tk">6</b> live in <code>dbt_project.yml</code> (once per run). <b class="tk">pre/post-hook</b> attach to each model — perfect for grants, logging &amp; cleanup.</div>
 </div>
 
 ---
@@ -787,6 +888,8 @@ layout: section
 
 # 05 — Ensuring Trust<br>Tests · History · Docs
 
+<div class="ghostnum">05</div>
+
 <div class="mt-6 muted flow">A data product is only as good as the <b class="tk">trust</b> it commands.</div>
 
 ---
@@ -831,12 +934,36 @@ where grade < 0 or grade > 100
 
 ## Time Travel: Snapshots & SCD Type 2
 
-<div class="card mt-2">
-<div class="box-h">// ID: 1 · SALARY: 5000 → 6000 · strategy: timestamp (updated_at)</div>
+<div class="card mt-2 pop line">
+<div class="box-h">// ID 1 · SALARY 5000 → 6000 · strategy: timestamp (updated_at)</div>
 
-<div class="flow" style="line-height:2">
-[T-0] INSERTED&nbsp;&nbsp;&nbsp; valid_from: 2025-01-01 &nbsp; valid_to: 2025-06-01 &nbsp;<span class="hi-amber">INVALIDATED</span><br>
-[T-1] UPDATED→6000 &nbsp; valid_from: 2025-06-01 &nbsp; valid_to: null &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="hi">ACTIVE</span>
+<div class="svg-wrap">
+<svg viewBox="0 0 1000 210" width="1000" height="210" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono', monospace">
+  <!-- change point -->
+  <line x1="520" y1="26" x2="520" y2="178" stroke="#8b8f96" stroke-width="2" stroke-dasharray="5 5"/>
+  <!-- version 1 (old, invalidated) -->
+  <rect x="120" y="34" width="400" height="48" fill="#141518" stroke="#ffd23f" stroke-width="3"/>
+  <text x="138" y="58" fill="#ffffff" font-size="16px" font-weight="800">v1 · salary 5000</text>
+  <text x="138" y="76" fill="#8b8f96" font-size="13px">valid_from 2025-01-01 → valid_to 2025-06-01</text>
+  <rect x="398" y="42" width="112" height="24" fill="#ffd23f"/>
+  <text x="454" y="59" fill="#0a0a0a" font-size="12px" font-weight="800" text-anchor="middle">INVALIDATED</text>
+  <!-- version 2 (new, active) -->
+  <rect x="520" y="104" width="380" height="48" fill="#141518" stroke="#12d3c8" stroke-width="3"/>
+  <text x="538" y="128" fill="#ffffff" font-size="16px" font-weight="800">v2 · salary 6000</text>
+  <text x="538" y="146" fill="#8b8f96" font-size="13px">valid_from 2025-06-01 → valid_to null</text>
+  <rect x="792" y="112" width="92" height="24" fill="#12d3c8"/>
+  <text x="838" y="129" fill="#0a0a0a" font-size="12px" font-weight="800" text-anchor="middle">ACTIVE</text>
+  <!-- time axis -->
+  <line x1="120" y1="180" x2="920" y2="180" stroke="#12d3c8" stroke-width="2"/>
+  <g fill="#8b8f96" font-size="12px" text-anchor="middle">
+    <line x1="120" y1="176" x2="120" y2="184" stroke="#12d3c8" stroke-width="2"/>
+    <text x="120" y="200">2025-01-01</text>
+    <line x1="520" y1="176" x2="520" y2="184" stroke="#12d3c8" stroke-width="2"/>
+    <text x="520" y="200">2025-06-01 · change</text>
+    <line x1="900" y1="176" x2="900" y2="184" stroke="#12d3c8" stroke-width="2"/>
+    <text x="900" y="200">now</text>
+  </g>
+</svg>
 </div>
 </div>
 
@@ -855,8 +982,14 @@ where grade < 0 or grade > 100
 
 ## Node Selection & Graph Operators
 
-<div class="card mt-2">
-<div class="box-h">// [source: raw] → [view: stg_users] → [table: fct_users] → [dashboards]</div>
+<div class="flowrow center mt-2" style="gap:8px">
+  <div class="node" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">source<br>raw</div></div>
+  <div class="arw sm">▶</div>
+  <div class="node" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">view<br>stg_users</div></div>
+  <div class="arw sm">▶</div>
+  <div class="node solid pop" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">table<br>fct_users</div></div>
+  <div class="arw sm">▶</div>
+  <div class="node" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">dashboards</div></div>
 </div>
 
 <div class="mt-4 grid grid-cols-1 gap-2 flow">
@@ -941,6 +1074,8 @@ layout: section
 
 # 06 — Best Practices<br>& Synthesis
 
+<div class="ghostnum">06</div>
+
 <div class="mt-6 muted flow">Industry <b class="tk">do's and don'ts</b> — then the big picture.</div>
 
 ---
@@ -1009,19 +1144,19 @@ layout: center
 
 ## Synthesis: The Trusted Data Product
 
-<div class="grid grid-cols-3 gap-4 mt-4">
-<div class="card tk text-center"><div class="box-h">LOGIC</div>SQL + Jinja + Macros</div>
-<div class="card tk text-center"><div class="box-h">STATE</div>YAML + Config + Profiles</div>
-<div class="card tk text-center"><div class="box-h">QUALITY</div>Tests + Snapshots + Hooks</div>
+<div class="grid grid-cols-3 gap-5 mt-4">
+<div class="node tk pop" style="text-align:center"><div class="t" style="color:var(--tk)">LOGIC</div><div class="s">SQL + Jinja + Macros</div></div>
+<div class="node tk pop" style="text-align:center"><div class="t" style="color:var(--tk)">STATE</div><div class="s">YAML + Config + Profiles</div></div>
+<div class="node tk pop" style="text-align:center"><div class="t" style="color:var(--tk)">QUALITY</div><div class="s">Tests + Snapshots + Hooks</div></div>
 </div>
 
-<div class="text-center tk text-3xl mt-3">↓</div>
+<div class="flowrow center" style="justify-content:space-around;color:var(--tk);font-size:1.6rem;font-weight:800;margin:6px 0"><span>▼</span><span>▼</span><span>▼</span></div>
 
-<div class="slab text-center text-xl">==&gt; dbt compile &amp; run ==&gt;</div>
+<div class="node solid big pop" style="text-align:center;align-items:center"><div class="t">dbt&nbsp;compile&nbsp;&amp;&nbsp;run</div></div>
 
-<div class="text-center tk text-3xl mt-1">↓</div>
+<div class="text-center" style="color:var(--tk);font-size:1.6rem;font-weight:800;margin:6px 0">▼</div>
 
-<div class="slab text-center mt-1">IDEMPOTENT · SELF-DOCUMENTING · TESTED DAG</div>
+<div class="slab text-center" style="font-size:1.15rem">IDEMPOTENT · SELF-DOCUMENTING · TESTED DAG</div>
 
 <div class="mt-5 text-center flow muted">You are not writing queries. <b class="tk">You are engineering the warehouse.</b></div>
 

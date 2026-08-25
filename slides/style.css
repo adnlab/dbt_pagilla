@@ -1,31 +1,36 @@
 /* ============================================================
-   dbt for Data Engineers — BRUTALIST × TEAL (toska) theme
-   Loaded globally by Slidev. Black canvas, condensed poster
-   headings, sharp square boxes, monospace labels.
+   dbt for Data Engineers — BRUTALIST × TEAL (toska)
+   Black canvas · condensed poster type · square boxes with
+   HARD offset shadows · block-arrow flow diagrams.
    ============================================================ */
 
-@import url("https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700;800&display=swap");
 
 :root {
-  --tk: #12d3c8;          /* toska — primary accent      */
-  --tk-bright: #37f5e8;   /* brighter toska for highlights */
+  --tk: #12d3c8;
+  --tk-bright: #37f5e8;
   --tk-dim: rgba(18, 211, 200, 0.14);
-  --ink: #0a0a0a;         /* canvas black                */
-  --panel: #111214;       /* box fill                    */
-  --line: #2a2c30;        /* hairline                    */
-  --paper: #f2f2f0;       /* inverted (white block) text */
-  --amber: #ffd23f;       /* warning / DON'T             */
+  --ink: #0a0a0a;
+  --panel: #141518;
+  --panel-2: #0e0f11;
+  --line: #33363c;
+  --paper: #f2f2f0;
+  --amber: #ffd23f;
   --fg: #e9e9e6;
   --muted: #8b8f96;
   --slidev-theme-primary: #12d3c8;
 }
 
-/* ---------- Canvas ---------- */
+/* ---------- Canvas + faint engineering grid ---------- */
 .slidev-layout {
   background-color: var(--ink);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px;
   color: var(--fg);
   font-family: "Archivo", system-ui, -apple-system, sans-serif;
-  padding: 2.4rem 2.8rem;
+  padding: 2.2rem 2.6rem;
 }
 
 /* ---------- Headings ---------- */
@@ -35,88 +40,72 @@
   font-weight: 400;
   color: #ffffff;
   text-transform: uppercase;
-  letter-spacing: -0.005em;
-  line-height: 0.94;
+  letter-spacing: -0.01em;
+  line-height: 0.9;
 }
+.slidev-layout h1 { font-size: 4.1rem; margin: 0 0 0.1em; }
+.slidev-layout h2 { font-size: 2.7rem; margin: 0 0 0.55em; position: relative; }
 
-.slidev-layout h1 {
-  font-size: 3.8rem;
-  margin: 0 0 0.1em;
-}
-
-.slidev-layout h2 {
-  font-size: 2.9rem;
-  margin: 0 0 0.5em;
-}
-
-/* thick brutalist underline on section titles */
+/* thick teal bar under section titles, with a solid start block */
 .slidev-layout h2::after {
   content: "";
   display: block;
   width: 100%;
-  height: 4px;
-  margin-top: 0.28em;
-  background: var(--tk);
+  height: 5px;
+  margin-top: 0.26em;
+  background: linear-gradient(90deg, var(--tk) 0 64px, var(--line) 64px);
 }
 
 .slidev-layout h3,
 .slidev-layout h4 {
   font-family: "JetBrains Mono", monospace;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--tk);
   font-size: 1rem;
   margin: 0 0 0.4em;
 }
 
-/* ---------- Text bits ---------- */
+/* ---------- Text ---------- */
 .slidev-layout p { line-height: 1.5; }
-.slidev-layout strong { color: #ffffff; font-weight: 700; }
-.slidev-layout em { color: var(--tk); font-style: normal; font-weight: 600; }
-.slidev-layout a {
-  color: var(--tk);
-  text-decoration: none;
-  border-bottom: 2px solid var(--tk-dim);
-}
-.slidev-layout li { margin: 0.3em 0; line-height: 1.45; }
-.slidev-layout li::marker { color: var(--tk); content: "▸ "; }
-.slidev-layout ul { list-style: none; padding-left: 1.1em; }
+.slidev-layout strong { color: #ffffff; font-weight: 800; }
+.slidev-layout em { color: var(--tk); font-style: normal; font-weight: 700; }
+.slidev-layout a { color: var(--tk); text-decoration: none; border-bottom: 2px solid var(--tk-dim); }
+.slidev-layout li { margin: 0.28em 0; line-height: 1.45; }
+.slidev-layout ul { list-style: none; padding-left: 1.15em; }
 .slidev-layout ul li { position: relative; }
 .slidev-layout ul li::before {
-  content: "▸";
-  color: var(--tk);
-  position: absolute;
-  left: -1.1em;
-  font-size: 0.9em;
+  content: "▚"; color: var(--tk); position: absolute; left: -1.15em; font-size: 0.72em; top: 0.15em;
 }
 
-/* ---------- Eyebrow (// COMMENT) ---------- */
+/* ---------- Eyebrow ---------- */
 .eyebrow {
   font-family: "JetBrains Mono", monospace;
   color: var(--tk);
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 0.7em;
 }
 
-/* ---------- Boxes / cards (sharp, no radius) ---------- */
+/* ---------- Boxes / cards ---------- */
 .card {
-  border: 2px solid var(--line);
+  border: 3px solid var(--line);
   background: var(--panel);
   padding: 14px 18px;
   min-width: 0;
 }
 .card.tk { border-color: var(--tk); }
+.card.pop { box-shadow: 8px 8px 0 var(--tk); }
+.card.pop.line { box-shadow: 8px 8px 0 var(--line); }
 .card pre { max-width: 100%; margin: 0.3em 0 0; }
 .card pre code { font-size: 0.72em; line-height: 1.4; }
 
-/* header strip inside a box */
 .box-h {
   font-family: "JetBrains Mono", monospace;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--tk);
@@ -124,17 +113,106 @@
   margin-bottom: 0.5em;
 }
 
-/* ---------- LAB checkpoint callout ---------- */
-.lab {
-  border: 2px solid var(--tk);
-  background: var(--tk-dim);
-  padding: 14px 18px;
+/* ============================================================
+   DIAGRAM SYSTEM — nodes, block arrows, lanes
+   ============================================================ */
+
+/* horizontal flow: <div class="flowrow"> node · arw · node </div> */
+.flowrow { display: flex; align-items: stretch; gap: 14px; flex-wrap: nowrap; }
+.flowrow.center { align-items: center; }
+.colrow { display: flex; gap: 14px; }
+.colrow > * { flex: 1; }
+
+/* a labelled block */
+.node {
+  border: 3px solid var(--fg);
+  background: var(--panel);
+  padding: 12px 16px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
+.node .t {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 800;
+  color: #fff;
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+.node .s { color: var(--muted); font-size: 0.8rem; margin-top: 3px; }
+.node.tk { border-color: var(--tk); }
+.node.solid { background: var(--tk); border-color: var(--tk); }
+.node.solid .t { color: var(--ink); }
+.node.solid .s { color: rgba(10,10,10,0.7); }
+.node.paper { background: var(--paper); border-color: var(--paper); }
+.node.paper .t { color: var(--ink); }
+.node.big .t { font-family: "Anton", sans-serif; font-weight: 400; font-size: 1.7rem; text-transform: uppercase; letter-spacing: 0.01em; }
+.node.pop { box-shadow: 7px 7px 0 var(--tk); }
+
+/* big block arrow between nodes */
+.arw {
+  align-self: center;
+  color: var(--tk);
+  font-weight: 800;
+  font-size: 2rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+.arw.sm { font-size: 1.3rem; }
+.arw.down { align-self: center; }
+
+/* vertical stack of small nodes (e.g. compile inputs) */
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.stack > .node { padding: 9px 14px; }
+
+/* icon panel (materializations) */
+.iconcard {
+  border: 3px solid var(--line);
+  background: var(--panel);
+  padding: 16px 14px;
+  text-align: center;
+}
+.iconcard .glyph {
+  font-family: "Anton", sans-serif;
+  font-size: 2.6rem;
+  color: var(--tk);
+  line-height: 1;
+  display: block;
+  margin-bottom: 8px;
+}
+.iconcard .name {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  color: #fff;
+  letter-spacing: 0.03em;
+}
+.iconcard .desc { color: var(--muted); font-size: 0.76rem; margin-top: 6px; line-height: 1.35; }
+
+/* pill / badge */
+.badge {
+  display: inline-block;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding: 3px 9px;
+  color: var(--ink);
+  background: var(--tk);
+  text-transform: uppercase;
+}
+.badge.ghost { background: transparent; color: var(--tk); border: 2px solid var(--tk); }
+.badge.amber { background: var(--amber); }
+
+/* ---------- LAB checkpoint ---------- */
+.lab { border: 3px solid var(--tk); background: var(--tk-dim); padding: 14px 18px; box-shadow: 8px 8px 0 rgba(18,211,200,0.18); }
 .lab::before {
   content: "▶ LAB CHECKPOINT";
   display: inline-block;
   font-family: "JetBrains Mono", monospace;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   color: var(--ink);
@@ -144,82 +222,64 @@
 }
 
 /* ---------- DO / DON'T ---------- */
-.do, .dont {
-  border-left: 5px solid var(--tk);
-  padding: 6px 0 6px 14px;
-  margin: 0.35em 0;
-}
+.do, .dont { border-left: 6px solid var(--tk); padding: 6px 0 6px 14px; margin: 0.4em 0; }
 .dont { border-left-color: var(--amber); }
-.do b   { color: var(--tk); }
+.do b { color: var(--tk); }
 .dont b { color: var(--amber); }
 
-/* ---------- White block (for punch statements) ---------- */
+/* ---------- White punch block ---------- */
 .slab {
   background: var(--paper);
   color: var(--ink);
   padding: 14px 20px;
   font-family: "JetBrains Mono", monospace;
-  font-weight: 700;
+  font-weight: 800;
+  box-shadow: 8px 8px 0 var(--tk);
 }
-.hi { background: var(--tk); color: var(--ink); padding: 0 8px; font-weight: 700; }
-.hi-amber { background: var(--amber); color: var(--ink); padding: 0 6px; font-weight: 700; }
+.hi { background: var(--tk); color: var(--ink); padding: 0 8px; font-weight: 800; }
+.hi-amber { background: var(--amber); color: var(--ink); padding: 0 6px; font-weight: 800; }
 
-/* ---------- Chips / tags ---------- */
+/* ---------- Chips ---------- */
 .chip {
   display: inline-block;
   font-family: "JetBrains Mono", monospace;
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 800;
   padding: 5px 12px;
   margin: 5px 7px 0 0;
   border: 2px solid var(--tk);
   color: var(--fg);
 }
 
-/* big numbered index item */
 .num { color: var(--tk); font-family: "Anton", sans-serif; margin-right: 0.4em; }
-
 .muted { color: var(--muted); }
-.tk    { color: var(--tk); }
+.tk { color: var(--tk); }
 .amber { color: var(--amber); }
 
-/* mono flow diagram helper: [a] -> [b] -> [c] */
-.flow {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 1.05rem;
-  letter-spacing: 0.02em;
-}
+.flow { font-family: "JetBrains Mono", monospace; font-size: 1.05rem; letter-spacing: 0.02em; }
 .flow b { color: var(--tk); }
 
-/* ---------- Tables (brutalist grid) ---------- */
-.slidev-layout table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-  border: 2px solid var(--tk);
-}
+/* ---------- Tables ---------- */
+.slidev-layout table { width: 100%; border-collapse: collapse; font-size: 0.9rem; border: 3px solid var(--tk); }
 .slidev-layout th {
   font-family: "JetBrains Mono", monospace;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--ink);
   background: var(--tk);
   text-align: left;
   padding: 8px 12px;
   border: 1px solid var(--tk);
 }
-.slidev-layout td {
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  vertical-align: top;
-}
+.slidev-layout td { padding: 8px 12px; border: 1px solid var(--line); vertical-align: top; }
+.slidev-layout tbody tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
 .slidev-layout th, .slidev-layout td { overflow-wrap: anywhere; }
 
-/* ---------- Code blocks ---------- */
+/* ---------- Code ---------- */
 .slidev-layout pre,
 .slidev-layout .slidev-code {
-  border: 2px solid var(--tk) !important;
+  border: 3px solid var(--tk) !important;
   border-radius: 0 !important;
   background: #0c0d0f !important;
   box-shadow: none !important;
@@ -238,7 +298,7 @@
 /* ---------- Blockquote ---------- */
 .slidev-layout blockquote {
   border: none;
-  border-left: 5px solid var(--tk);
+  border-left: 6px solid var(--tk);
   background: var(--tk-dim);
   padding: 0.7em 1.1em;
   color: var(--fg);
@@ -254,10 +314,7 @@
 .slidev-layout.cover,
 .slidev-layout.section,
 .slidev-layout.end,
-.slidev-layout.center {
-  background-color: var(--ink);
-}
-/* dividers flow from top-left, not centered */
+.slidev-layout.center { background-color: var(--ink); }
 .slidev-layout.section,
 .slidev-layout.center {
   justify-content: flex-start !important;
@@ -265,21 +322,30 @@
   text-align: left !important;
 }
 .slidev-layout.section > *,
-.slidev-layout.center > * {
-  width: 100%;
-  text-align: left !important;
+.slidev-layout.center > * { width: 100%; text-align: left !important; }
+
+/* giant ghost number on section dividers */
+.ghostnum {
+  position: absolute;
+  right: 2.2rem;
+  bottom: 1rem;
+  font-family: "Anton", sans-serif;
+  font-size: 15rem;
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 3px var(--line);
+  pointer-events: none;
+  user-select: none;
 }
 
 /* frame corner ticks on cover */
-.frame {
-  position: absolute;
-  inset: 1.1rem;
-  border: 2px solid var(--line);
-  pointer-events: none;
-}
+.frame { position: absolute; inset: 1.1rem; border: 3px solid var(--line); pointer-events: none; }
 
 .caption { color: var(--muted); font-size: 0.78rem; margin-top: 0.4rem; }
 
-/* hide stray goto dialog list */
+/* SVG diagram helpers — force intrinsic ratio scaling in Slidev */
+.svg-wrap { width: 100%; }
+.svg-wrap svg { width: 100% !important; height: auto !important; display: block; }
+
 #slidev-goto-dialog .autocomplete-list { display: none; }
 #slidev-goto-dialog:focus-within .autocomplete-list { display: block; }

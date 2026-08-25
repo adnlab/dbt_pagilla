@@ -1,14 +1,46 @@
-# dbt Class — dbt Core + Postgres + Docker
+# dbt Core: The Brutalist Blueprint
+
+![dbt](https://img.shields.io/badge/dbt--core-1.9%2B-12d3c8?style=flat-square)
+![Postgres](https://img.shields.io/badge/Postgres-16-0a0a0a?style=flat-square)
+![Docker](https://img.shields.io/badge/Docker-compose-12d3c8?style=flat-square)
+![build](https://img.shields.io/badge/dbt%20build-PASS%2024-12d3c8?style=flat-square)
 
 A tiny, fully-runnable dbt project for a beginner data-engineering class.
 **Both Postgres and dbt Core run in Docker** — no local Python required.
-Every step here maps to a **▶ LAB CHECKPOINT** in [`slides/`](slides/).
+Every step here maps to a **▶ LAB CHECKPOINT** in the slides.
 
-📊 Slides: https://thosangs.github.io/dbt_lecture/
+> 📊 **Slides:** https://thosangs.github.io/dbt_lecture/  ·  brutalist × teal, diagram-driven
 
+### The stack
+
+```mermaid
+flowchart LR
+    subgraph docker["🐳 docker compose"]
+        direction LR
+        subgraph pg["postgres:16 container"]
+            raw[("raw schema<br/>customers · orders<br/>payments · events")]
+        end
+        subgraph dbtc["dbt container"]
+            dbt["dbt Core<br/>+ postgres adapter"]
+        end
+    end
+    dbt -->|reads / writes SQL| raw
 ```
-raw (Docker Postgres)  ──sources──▶  staging (views)  ──▶  marts (tables)
-      seeds ─────────────ref─────────────┘                 tests · snapshots · docs
+
+### The model DAG (what dbt builds)
+
+```mermaid
+flowchart LR
+    S1[/"source: raw.customers"/] --> M1["stg_customers<br/>(view)"]
+    S2[/"source: raw.orders"/] --> M2["stg_orders<br/>(view)"]
+    S3[/"source: raw.payments"/] --> M3["stg_payments<br/>(view)"]
+    SEED["payment_types<br/>(seed)"] --> M3
+    M1 --> F1["fct_sales<br/>(table)"]
+    M2 --> F1
+    M3 --> F1
+    S4[/"source: raw.events"/] --> F2["fct_events<br/>(incremental)"]
+    F1 --> T{{"tests · docs"}}
+    F2 --> T
 ```
 
 ## The two containers
