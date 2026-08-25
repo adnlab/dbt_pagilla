@@ -1,18 +1,17 @@
 # Assignment: Data Build Tool — DVD Rental Store Case Study (Pagila)
 
-> **!!Note:** You are expected NOT to rely entirely on AI to complete this
-> assignment.
+> **!!Note:** The entire assignment is expected NOT to rely fully on the use of AI.
 >
-> *"Learning is like planting a tree. If you only rely on AI without
-> understanding the essence, what grows is not your competence, but a
-> weakening dependence."* — Learning Design Dibimbing
+> *"Learning is like planting a tree. If one only relies on AI without
+> understanding the essence, what grows is not competence, but a weakening
+> dependence."* — Learning Design Dibimbing
 
 **Data Engineer · Period: Data Build Tool**
 
 This assignment adapts the retail case study to the **Pagila** dataset — the
 standard PostgreSQL sample database (a **DVD rental store**, ~51,000 payments &
 rentals). The environment (Postgres + dbt + data) **is already provisioned in
-Docker**, so you can go straight to **building models** with no manual setup.
+Docker**, so students can go straight to **building the models** with no manual setup.
 
 ---
 
@@ -29,17 +28,17 @@ Docker**, so you can go straight to **building models** with no manual setup.
 
 ## Description
 
-You will practice the end-to-end dbt workflow — **raw → staging → intermediate
-→ mart** — using a DVD-rental store case study (Pagila). The raw data is already
-available in the `public` schema (auto-loaded by Docker); your job is to build
-the transformations.
+In this assignment, students practice the end-to-end dbt workflow — **raw →
+staging → intermediate → mart** — using a DVD-rental store case study (Pagila).
+The raw data is already available in the `public` schema (auto-loaded by Docker);
+the task is to build the transformations on top of it.
 
 ---
 
 ## Setup (already provided — no manual setup needed)
 
-The Pagila raw layer is auto-loaded into PostgreSQL inside the container. You
-only need:
+The Pagila raw layer is auto-loaded into PostgreSQL inside the container. To
+start:
 
 ```bash
 # from the project root (dbt_class/)
@@ -51,10 +50,10 @@ cd assignment
 dbt debug                                  # expect "All checks passed!"
 ```
 
-Write all of your models inside this **`assignment/`** folder. Model output goes
-to the **`dev_assignment`** schema (isolated from the in-class demo, which uses
+All models are written inside the **`assignment/`** folder. Model output goes to
+the **`dev_assignment`** schema (isolated from the in-class demo, which uses
 `dev`). The file `models/staging/_sources.yml` already declares the Pagila
-sources — just reference them via `{{ source('pagila', ...) }}`.
+sources — reference them via `{{ source('pagila', ...) }}`.
 
 > **Raw tables (source `pagila`, schema `public`):**
 > `customer`, `rental`, `payment`, `film`, `category`, `film_category`,
