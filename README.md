@@ -126,6 +126,18 @@ tests/                 assert_fct_payments_amount_positive.sql (singular test)
 slides/                the lecture deck (Slidev)
 ```
 
+## Student assignment
+
+A graded, end-to-end assignment (staging → intermediate → mart → snapshot → test)
+built on this same Pagila data lives in **[`assignment/`](assignment/)** — its own
+dbt sub-project that runs in the same container and writes to an isolated
+`dev_assignment` schema, so students just start:
+
+```bash
+docker compose run --rm dbt bash
+cd assignment && dbt debug
+```
+
 ## Reset / teardown
 
 ```bash

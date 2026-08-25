@@ -1,0 +1,32 @@
+name: 'dbt_assignment'
+version: '1.0.0'
+config-version: 2
+
+# Reuse the SAME connection as the lecture project (root profiles.yml,
+# resolved via DBT_PROFILES_DIR=/usr/app inside the dbt container).
+profile: 'dbt_class'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  dbt_assignment:
+    # Your models land in schema `dev_assignment`, isolated from the
+    # lecture demo (which uses `dev`). Nothing you build here clashes.
+    +schema: assignment
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: table
+    marts:
+      +materialized: table
+
+seeds:
+  dbt_assignment:
+    +schema: assignment

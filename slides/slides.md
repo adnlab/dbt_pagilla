@@ -13,6 +13,7 @@ fonts:
   local: Anton
 drawings:
   enabled: false
+section: Introduction
 ---
 
 <div class="frame"></div>
@@ -37,6 +38,7 @@ drawings:
 
 ---
 layout: section
+section: Introduction
 ---
 
 <div class="eyebrow">// Today's build order</div>
@@ -56,6 +58,7 @@ layout: section
 
 ---
 layout: section
+section: 01 · The Why
 ---
 
 <div class="eyebrow">// Module 01 · 20 min</div>
@@ -253,6 +256,7 @@ WHERE ...;
 
 ---
 layout: section
+section: 02 · Scaffolding
 ---
 
 <div class="eyebrow">// Module 02 · 20 min</div>
@@ -466,6 +470,7 @@ Open <code>target/compiled/…/my_first_model.sql</code> — see the raw SQL dbt
 
 ---
 layout: section
+section: 03 · Pipelines
 ---
 
 <div class="eyebrow">// Module 03 · 30 min</div>
@@ -678,6 +683,7 @@ dbt run --select fct_payments      # delta only the 2nd time
 
 ---
 layout: section
+section: 04 · Dynamic SQL
 ---
 
 <div class="eyebrow">// Module 04 · 30 min</div>
@@ -881,6 +887,7 @@ dbt run --select fct_payments --vars '{"start_date":"2022-04-01"}'
 
 ---
 layout: section
+section: 05 · Ensuring Trust
 ---
 
 <div class="eyebrow">// Module 05 · 30 min</div>
@@ -1067,6 +1074,7 @@ dbt docs generate && dbt docs serve --host 0.0.0.0
 
 ---
 layout: section
+section: 06 · Best Practices
 ---
 
 <div class="eyebrow">// Module 06 · 15 min</div>
