@@ -280,7 +280,7 @@ section: 02 · Scaffolding
 services:
   postgres:            # the warehouse
     image: postgres:18
-    ports: ["5432:5432"]
+    ports: ["15432:5432"]   # high host port — avoids local Postgres clashes
 
   dbt:                 # dbt Core itself
     build: ./docker/dbt
@@ -381,7 +381,7 @@ dbt_class:
     dev:
       type: postgres
       host: localhost
-      port: 5432
+      port: 15432          # host port; containers use DBT_PORT=5432
       user: dbt
       password: dbt
       dbname: analytics
@@ -1019,7 +1019,7 @@ where grade < 0 or grade > 100
 
 ```bash
 dbt docs generate            # build the manifest
-dbt docs serve --host 0.0.0.0  # UI + lineage :8080
+dbt docs serve --host 0.0.0.0  # UI + lineage :15480 (via compose)
 ```
 
 <div class="mt-4">

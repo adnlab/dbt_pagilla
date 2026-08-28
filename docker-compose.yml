@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: dbt
       POSTGRES_DB: analytics
     ports:
-      - "5432:5432"
+      - "15432:5432"   # host port avoids clashing with local Postgres
     volumes:
       # Postgres 18 images store data under /var/lib/postgresql (versioned subdir)
       - pgdata:/var/lib/postgresql
@@ -18,6 +18,42 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks: [dbt_class_net]
+
+  # Browse Postgres in the browser with WhoDB — a modern next-gen explorer:
+  # interactive schema graph, data grid + inline edit, SQL scratchpad, CSV/Excel
+  # export. The Pagila connection is pre-loaded on the login page (just click it).
+  whodb:
+    image: clidey/whodb
+    container_name: dbt_class_whodb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "15424:8080"   # http://localhost:15424
+    environment:
+      WHODB_POSTGRES: '[{"alias":"Pagila (dbt_class)","host":"postgres","user":"dbt","password":"dbt","database":"analytics","port":"5432"}]'
+    networks: [dbt_class_net]
+
+  # dbt docs site — lineage graph + model/column docs at http://localhost:15480
+  dbt-docs:
+    build: ./docker/dbt
+    container_name: dbt_class_docs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DBT_PROFILES_DIR: /usr/app
+      DBT_HOST: postgres
+      DBT_PORT: 5432
+    volumes:
+      - .:/usr/app
+    working_dir: /usr/app
+    ports:
+      - "15480:8080"   # http://localhost:15480
+    command: >
+      bash -c "dbt docs generate && exec dbt docs serve --host 0.0.0.0 --port 8080"
+    networks: [dbt_class_net]
 
   # dbt Core itself, containerized. Not started by `docker compose up`
   # (it's behind a profile); you invoke it on demand with `docker compose run`.
@@ -30,11 +66,15 @@ services:
     environment:
       DBT_PROFILES_DIR: /usr/app   # use the profiles.yml in the project
       DBT_HOST: postgres           # reach Postgres over the compose network
+      DBT_PORT: 5432               # internal compose port (host uses 15432)
     volumes:
       - .:/usr/app                 # live-mount the project
     working_dir: /usr/app
-    ports:
-      - "8080:8080"                # for `dbt docs serve`
+    networks: [dbt_class_net]
 
 volumes:
   pgdata: {}
+
+networks:
+  dbt_class_net:
+    name: dbt_class_net

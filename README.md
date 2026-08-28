@@ -18,15 +18,19 @@ Every step here maps to a **▶ LAB CHECKPOINT** in the slides.
 
 ```mermaid
 flowchart LR
-    subgraph docker["🐳 docker compose"]
+    subgraph docker["🐳 docker compose up"]
         direction LR
-        subgraph pg["postgres:18 container"]
+        subgraph pg["postgres:18"]
             raw[("Pagila public schema<br/>customer · rental<br/>payment · film")]
         end
-        subgraph dbtc["dbt container"]
-            dbt["dbt Core<br/>+ postgres adapter"]
-        end
+        whodb["WhoDB :15424<br/>tables · schema graph · SQL"]
+        docs["dbt-docs :15480<br/>lineage · model docs"]
     end
+    subgraph ondemand["docker compose run dbt"]
+        dbt["dbt Core<br/>run · test · build"]
+    end
+    whodb -->|browse| raw
+    docs -->|catalog| raw
     dbt -->|reads / writes SQL| raw
 ```
 
@@ -48,24 +52,39 @@ flowchart LR
     F1 --> T
 ```
 
-## The two containers
+## The containers
 
-| Service | What it is |
-|---|---|
-| `postgres` | The warehouse (Postgres 18). Pagila is auto-loaded into `public` on first boot. Started by `docker compose up`. |
-| `dbt` | dbt Core + the Postgres adapter, in its own image. Invoked on demand with `docker compose run` (it's behind a compose profile, so `up` doesn't start it). |
+| Service | What it is | URL |
+|---|---|---|
+| `postgres` | The warehouse (Postgres 18). Pagila is auto-loaded into `public` on first boot. | `localhost:15432` |
+| `whodb` | [WhoDB](https://github.com/clidey/whodb) — a next-gen browser UI: browse tables & data, an **interactive schema graph**, SQL scratchpad, CSV/Excel export. The Pagila connection is pre-loaded (just click it on the login page). | http://localhost:15424 |
+| `dbt-docs` | dbt docs site — model descriptions, column metadata, interactive lineage graph. Regenerates on container start. | http://localhost:15480 |
+| `dbt` | dbt Core CLI for labs. Invoked on demand with `docker compose run` (profile `dbt`; not started by plain `up`). | — |
 
 ## 0. Bring up the stack
 
 ```bash
-docker compose up -d          # build images + start Postgres
+docker compose up -d          # postgres + whodb + dbt-docs
+
+# Browse the raw Pagila data — tables, data grid, schema graph
+# (click the pre-loaded "Pagila (dbt_class)" profile on the login page):
+open http://localhost:15424
+
+# dbt docs / lineage (after models are built, restart to refresh):
+open http://localhost:15480
 
 # drop into the dbt container — every dbt command runs in here:
-docker compose run --rm --service-ports dbt bash
+docker compose run --rm dbt bash
 ```
 
-You are now inside the container. Run the labs below from this shell.
+You are now inside the dbt container when you `run bash`. Run the labs below from that shell.
 (One-off without a shell: `docker compose run --rm dbt dbt debug`.)
+
+After changing models or YAML docs, refresh the docs site:
+
+```bash
+docker compose restart dbt-docs
+```
 
 ## 1. Module 02 — connect & first run
 
@@ -97,7 +116,7 @@ dbt run --select fct_payments --vars '{"start_date": "2022-04-01"}'
 dbt test                          # generic + singular tests
 dbt snapshot                      # SCD Type 2 history of customer.last_update
 dbt build --select +fct_payments  # run + test the model and everything upstream
-dbt docs generate && dbt docs serve --host 0.0.0.0   # lineage at http://localhost:8080
+docker compose restart dbt-docs   # regenerate + serve at http://localhost:15480
 ```
 
 ## Peek at the results (from your host, another terminal)
@@ -110,7 +129,7 @@ docker exec -it dbt_class_pg psql -U dbt -d analytics \
 ## Project layout
 
 ```
-docker-compose.yml     postgres + dbt services
+docker-compose.yml     postgres + whodb + dbt-docs + dbt (on-demand)
 docker/init/           01_setup.sql + Pagila dump -> loaded into public (dbt SOURCES)
 docker/dbt/Dockerfile  the dbt Core + Postgres adapter image
 dbt_project.yml        project config (paths, vars, post-hook, materializations)

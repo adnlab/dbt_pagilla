@@ -1,14 +1,14 @@
 # How dbt connects to the warehouse (the "keycard").
 # host is env-driven so the SAME file works either way:
-#   - inside the dbt container  -> DBT_HOST=postgres (compose sets this)
-#   - from your host machine     -> defaults to localhost
+#   - inside the dbt container  -> DBT_HOST=postgres, DBT_PORT=5432 (compose sets these)
+#   - from your host machine     -> defaults to localhost:15432
 dbt_class:
   target: dev
   outputs:
     dev:
       type: postgres
       host: "{{ env_var('DBT_HOST', 'localhost') }}"
-      port: 5432
+      port: "{{ env_var('DBT_PORT', '15432') | int }}"
       user: dbt
       password: dbt
       dbname: analytics
