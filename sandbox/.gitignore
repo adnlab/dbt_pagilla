@@ -1,0 +1,4 @@
+# Scratch space for the `dbt init` demo — keep the folder in git,
+# ignore everything generated inside it.
+*
+!.gitignore

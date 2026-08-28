@@ -324,6 +324,38 @@ No local Python needed — dbt lives in its own image. Postgres is reachable at 
 
 ---
 
+## Starting From Scratch: `dbt init`
+
+<div class="flow mt-1 mb-4 muted">This project is pre-built — but this is how a dbt project is <span class="tk">born</span>.</div>
+
+<div class="grid grid-cols-2 gap-8 mt-2 items-start">
+
+<div class="card tk">
+<div class="box-h">// scaffold a NEW project — safely</div>
+
+```bash
+docker compose run --rm dbt bash
+cd /sandbox        # mounted + git-ignored
+export DBT_PROFILES_DIR=/sandbox
+dbt init demo_shop # interactive wizard
+```
+</div>
+
+<div>
+
+- The wizard asks for the <b class="tk">adapter</b> + connection, then scaffolds <code>models/</code>, <code>seeds/</code>, <code>macros/</code>, <code>dbt_project.yml</code>
+- Run it in <code>/sandbox</code> — <b class="tk">outside</b> the project — so <code>dbt init</code> won't detect the parent project and refuse to scaffold
+- <code>DBT_PROFILES_DIR=/sandbox</code> keeps the wizard's profile out of the real <code>profiles.yml</code>
+- Tree only, no wizard: <code>dbt init demo_shop --skip-profile-setup</code>
+
+</div>
+
+</div>
+
+<div class="mt-5 flow muted"><code>/sandbox</code> ↔ host <code>sandbox/</code> is git-ignored; a fresh <code>docker compose run</code> resets everything back to the project.</div>
+
+---
+
 ## The Project Tree
 
 <div class="grid grid-cols-2 gap-8 mt-2 items-start">

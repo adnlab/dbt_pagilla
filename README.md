@@ -175,6 +175,8 @@ macros/                full_name.sql
 snapshots/             customers_snapshot.sql (SCD Type 2 on last_update)
 tests/                 assert_fct_payments_amount_positive.sql (singular test)
 slides/                the lecture deck (Slidev)
+assignment/            student assignment sub-project (Pagila) — no setup needed
+sandbox/               scratch space for the `dbt init` demo (git-ignored)
 ```
 
 ## Student assignment
@@ -188,6 +190,27 @@ dbt sub-project that runs in the same container and writes to an isolated
 docker compose run --rm dbt bash
 cd assignment && dbt debug
 ```
+
+## Demo: `dbt init` (how a dbt project is born)
+
+This repo is already scaffolded, but to *show* how `dbt init` bootstraps a brand-new
+project, run it in the throwaway **`sandbox/`** folder. `sandbox/` is bind-mounted
+into the dbt container at **`/sandbox`** (a path *outside* `/usr/app`, so `dbt init`
+doesn't detect the parent project and refuse to scaffold) and is git-ignored, so
+the real `dbt_project.yml` / `profiles.yml` are never touched.
+
+```bash
+docker compose run --rm dbt bash
+cd /sandbox                          # ↔ host ./sandbox — mounted, visible in your editor, git-ignored
+export DBT_PROFILES_DIR=/sandbox     # the wizard writes its profile HERE, not the real one
+dbt init demo_shop                   # full interactive wizard
+```
+
+- The `export` is scoped to that shell; a fresh `docker compose run` resets
+  `DBT_PROFILES_DIR` back to `/usr/app`. Or just `cd /usr/app` to keep working on the project.
+- To point the wizard at the running Pagila DB, enter: host `postgres`, port `5432`,
+  user `dbt`, password `dbt`, dbname `analytics`, schema `demo`.
+- Just the folder tree, no wizard / no profile: `dbt init demo_shop --skip-profile-setup`.
 
 ## Reset / teardown
 
