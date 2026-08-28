@@ -274,21 +274,28 @@ section: 02 · Scaffolding
 <div class="grid grid-cols-2 gap-8 mt-2">
 
 <div class="card">
-<div class="box-h">// docker-compose.yml — two services</div>
+<div class="box-h">// docker-compose.yml — the lab stack</div>
 
 ```yaml
 services:
-  postgres:            # the warehouse
+  postgres:            # the warehouse (Pagila auto-loaded)
     image: postgres:18
-    ports: ["15432:5432"]   # high host port — avoids local Postgres clashes
+    ports: ["15432:5432"]
 
-  dbt:                 # dbt Core itself
+  whodb:               # browse raw data in the browser
+    image: clidey/whodb
+    ports: ["15424:8080"]
+
+  dbt-docs:            # lineage + model docs
+    build: ./docker/dbt
+    ports: ["15480:8080"]
+
+  dbt:                 # dbt Core CLI (on demand)
     build: ./docker/dbt
     profiles: ["dbt"]
     environment:
-      DBT_HOST: postgres   # reach pg over
-    volumes: [".:/usr/app"]  # the network
-    working_dir: /usr/app
+      DBT_HOST: postgres
+    volumes: [".:/usr/app"]
 ```
 </div>
 
@@ -296,12 +303,13 @@ services:
 <div class="box-h">// Everything runs in a container</div>
 
 ```bash
-# build images + start Postgres
+# build images + start postgres, whodb, dbt-docs
 docker compose up -d
 
+# browse Pagila at http://localhost:15424 (click the pre-loaded profile)
+
 # drop into the dbt container…
-docker compose run --rm \
-  --service-ports dbt bash
+docker compose run --rm dbt bash
 
 # …now dbt runs in here:
 dbt debug   # "All checks passed!"
@@ -326,6 +334,9 @@ dbt_class/
 ├── dbt_project.yml   # the master plan
 ├── profiles.yml      # warehouse credentials
 ├── models/           # your SELECT logic
+│   ├── staging/      # stg_* — 1:1 with sources (views)
+│   ├── intermediate/ # int_* — joins & rollups (views)
+│   ├── marts/        # dim_* / fct_* — business tables
 │   └── example/
 │       ├── my_first_model.sql
 │       └── schema.yml
@@ -341,7 +352,9 @@ dbt_class/
 
 - <code>dbt_project.yml</code> — paths, project name, global config
 - <code>profiles.yml</code> — *how* to connect (the keycard)
-- <code>models/</code> — the transformations (the whole point)
+- <code>models/staging/</code> — light cleanup, one model per source table
+- <code>models/intermediate/</code> — joins &amp; prep between staging and marts
+- <code>models/marts/</code> — final dim/fct tables for BI
 - <code>macros/</code> — DRY Jinja functions
 - <code>seeds/</code> — tiny static CSVs (<code>dbt seed</code>)
 - <code>snapshots/</code> — track history over time
@@ -368,7 +381,12 @@ model-paths: ['models']
 
 models:
   dbt_class:
-    +materialized: view    # default
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
 ```
 </div>
 
@@ -553,12 +571,56 @@ section: 03 · Pipelines
 &nbsp;&nbsp;↓<br>
 [<b>view</b>: stg_payments]<br>
 &nbsp;&nbsp;↓<br>
-[<b>table</b>: fct_payments]
+[<b>view</b>: int_customer_payments]<br>
+&nbsp;&nbsp;↓<br>
+[<b>table</b>: dim_customers]
 </div>
 
-<div class="mt-3 muted text-sm">No manifest to maintain by hand — the references <i>are</i> the graph.</div>
+<div class="mt-3 muted text-sm"><b class="tk">Rule:</b> only staging touches <code>source()</code>. Marts only use <code>ref()</code>.</div>
 </div>
 
+</div>
+
+---
+
+## The Layering Model
+
+<div class="grid grid-cols-3 gap-4 mt-3">
+
+<div class="iconcard">
+  <span class="glyph">①</span>
+  <div class="name">Staging</div>
+  <div class="desc">1:1 with a source table. Rename, cast, light cleanup. <code>source()</code> lives here only.</div>
+</div>
+
+<div class="iconcard" style="border-color:var(--tk);box-shadow:6px 6px 0 var(--tk)">
+  <span class="glyph">②</span>
+  <div class="name">Intermediate</div>
+  <div class="desc">Joins &amp; rollups between staging models. Shared prep reused by multiple marts.</div>
+</div>
+
+<div class="iconcard">
+  <span class="glyph">③</span>
+  <div class="name">Marts</div>
+  <div class="desc">Final dim/fct tables for BI. <b class="tk">Only <code>ref()</code></b> — never <code>source()</code>.</div>
+</div>
+
+</div>
+
+<div class="mt-5 card">
+<div class="box-h">// dim_customers — the right way</div>
+
+```sql
+-- staging
+from {{ ref('stg_customers') }}
+
+-- intermediate (geo + payment totals)
+from {{ ref('int_addresses') }}
+from {{ ref('int_customer_payments') }}
+
+-- ✗ never in a mart:
+-- from {{ source('pagila', 'address') }}
+```
 </div>
 
 ---
@@ -670,8 +732,10 @@ Load a seed, declare a source, and materialize a model — watch the DAG come al
 # 1. load a tiny static lookup CSV
 dbt seed
 
-# 2. build staging views + dimension tables
-dbt run --select stg_customers dim_customers
+# 2. build layer by layer
+dbt run --select staging          # stg_* views
+dbt run --select intermediate     # int_* views
+dbt run --select dim_customers dim_films
 
 # 3. run the incremental fact (~51k rows)
 dbt run --select fct_payments      # full first time
@@ -679,7 +743,7 @@ dbt run --select fct_payments      # delta only the 2nd time
 ```
 </div>
 
-<div class="mt-5 flow muted">Check Postgres after each step: <code>dev.stg_customers</code> is a <b class="tk">view</b>, <code>dev.dim_customers</code> is a <b class="tk">table</b>.</div>
+<div class="mt-5 flow muted">Check Postgres: <code>dev.stg_customers</code> &amp; <code>dev.int_addresses</code> are <b class="tk">views</b>; <code>dev.dim_customers</code> is a <b class="tk">table</b>.</div>
 
 ---
 layout: section
@@ -993,7 +1057,9 @@ where grade < 0 or grade > 100
   <div class="arw sm">▶</div>
   <div class="node" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">view<br>stg_payments</div></div>
   <div class="arw sm">▶</div>
-  <div class="node solid pop" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">table<br>fct_payments</div></div>
+  <div class="node" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">view<br>int_customer_payments</div></div>
+  <div class="arw sm">▶</div>
+  <div class="node solid pop" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">table<br>dim_customers</div></div>
   <div class="arw sm">▶</div>
   <div class="node" style="text-align:center;padding:8px 12px"><div class="t" style="font-size:0.92rem">dashboards</div></div>
 </div>

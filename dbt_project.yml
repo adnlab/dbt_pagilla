@@ -19,12 +19,16 @@ vars:
   start_date: '2022-01-01'   # Pagila payments span 2022
 
 # Per-folder configuration. Folders map to what the models mean:
-#   staging -> lightweight views      marts -> physical tables
+#   staging -> lightweight views (1:1 with sources)
+#   intermediate -> joins & prep between staging and marts
+#   marts -> physical dim/fct tables
 models:
   dbt_class:
     # Module 04 demo: grant read access right after each model is built.
     +post-hook: "grant select on {{ this }} to reporter"
     staging:
+      +materialized: view
+    intermediate:
       +materialized: view
     marts:
       +materialized: table

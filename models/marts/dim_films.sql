@@ -1,20 +1,14 @@
--- A film dimension: film + its category + a human-readable rating label
--- pulled from the rating_descriptions SEED (referenced with ref()).
+-- Film dimension: catalogue enriched with category and rating label.
+-- Built only from staging, seeds, and intermediate — never from raw sources.
 with films as (
 
     select * from {{ ref('stg_films') }}
 
 ),
 
--- a film can have several categories -> roll them up to one row per film
 categories as (
 
-    select
-        fc.film_id,
-        string_agg(distinct cat.name, ', ' order by cat.name) as category
-    from {{ source('pagila', 'film_category') }} fc
-    left join {{ source('pagila', 'category') }} cat on cat.category_id = fc.category_id
-    group by fc.film_id
+    select * from {{ ref('int_film_categories') }}
 
 ),
 
@@ -34,4 +28,4 @@ select
     r.description as rating_description
 from films f
 left join categories c on c.film_id = f.film_id
-left join ratings r    on r.rating = f.rating
+left join ratings r on r.rating = f.rating

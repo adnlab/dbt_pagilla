@@ -60,3 +60,35 @@ models:
     columns:
       - name: rental_id
         data_tests: [unique, not_null]
+
+  - name: stg_addresses
+    description: "One cleaned row per address."
+    columns:
+      - name: address_id
+        data_tests: [unique, not_null]
+
+  - name: stg_cities
+    description: "One cleaned row per city."
+    columns:
+      - name: city_id
+        data_tests: [unique, not_null]
+
+  - name: stg_countries
+    description: "One cleaned row per country."
+    columns:
+      - name: country_id
+        data_tests: [unique, not_null]
+
+  - name: stg_film_categories
+    description: "Bridge table linking films to categories."
+    columns:
+      - name: film_id
+        data_tests: [not_null]
+      - name: category_id
+        data_tests: [not_null]
+
+  - name: stg_categories
+    description: "One cleaned row per category label."
+    columns:
+      - name: category_id
+        data_tests: [unique, not_null]

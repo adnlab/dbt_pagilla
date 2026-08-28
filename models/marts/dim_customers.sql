@@ -1,33 +1,20 @@
--- A customer dimension: identity + location + lifetime value.
--- Materialized as a TABLE (folder default) because BI reads it often.
+-- Customer dimension: identity + location + lifetime value.
+-- Built only from staging + intermediate — never from raw sources.
 with customers as (
 
     select * from {{ ref('stg_customers') }}
 
 ),
 
--- resolve the address -> city -> country chain from the raw sources
 geo as (
 
-    select
-        a.address_id,
-        a.district,
-        c.city,
-        co.country
-    from {{ source('pagila', 'address') }} a
-    left join {{ source('pagila', 'city') }}    c  on c.city_id = a.city_id
-    left join {{ source('pagila', 'country') }} co on co.country_id = c.country_id
+    select * from {{ ref('int_addresses') }}
 
 ),
 
 payments as (
 
-    select
-        customer_id,
-        count(*)     as payment_count,
-        sum(amount)  as lifetime_value
-    from {{ ref('stg_payments') }}
-    group by customer_id
+    select * from {{ ref('int_customer_payments') }}
 
 )
 
@@ -41,5 +28,5 @@ select
     coalesce(p.payment_count, 0) as payment_count,
     coalesce(p.lifetime_value, 0) as lifetime_value
 from customers c
-left join geo g      on g.address_id = c.address_id
+left join geo g on g.address_id = c.address_id
 left join payments p on p.customer_id = c.customer_id

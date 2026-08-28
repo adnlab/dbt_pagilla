@@ -23,6 +23,6 @@ npm run dev        # opens http://localhost:3030
 
 ## Structure
 
-Module 01 The Why · 02 Scaffolding · 03 Pipelines · 04 Dynamic SQL ·
+Module 01 The Why · 02 Scaffolding · 03 Pipelines (staging → intermediate → marts) · 04 Dynamic SQL ·
 05 Trust · 06 Best Practices. Each module ends with a `▶ LAB CHECKPOINT`
 that maps to the Dockerized Postgres project in the repo root.

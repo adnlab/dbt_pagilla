@@ -3,7 +3,7 @@
 ![dbt](https://img.shields.io/badge/dbt--core-1.9%2B-12d3c8?style=flat-square)
 ![Postgres](https://img.shields.io/badge/Postgres-18-0a0a0a?style=flat-square)
 ![Docker](https://img.shields.io/badge/Docker-compose-12d3c8?style=flat-square)
-![build](https://img.shields.io/badge/dbt%20build-PASS%2029-12d3c8?style=flat-square)
+![build](https://img.shields.io/badge/dbt%20build-PASS%2053-12d3c8?style=flat-square)
 ![data](https://img.shields.io/badge/Pagila-~51k%20rows-12d3c8?style=flat-square)
 
 A fully-runnable dbt project for a beginner data-engineering class, on real
@@ -38,18 +38,47 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    S1[/"source: customer"/] --> M1["stg_customers<br/>(view)"]
-    S2[/"source: payment"/] --> M2["stg_payments<br/>(view)"]
-    S3[/"source: film"/] --> M3["stg_films<br/>(view)"]
-    SEED["rating_descriptions<br/>(seed)"] --> D2
-    M1 --> D1["dim_customers<br/>(table)"]
-    M2 --> D1
-    M3 --> D2["dim_films<br/>(table)"]
-    M2 --> F1["fct_payments<br/>(incremental, ~51k)"]
+    subgraph sources["sources"]
+        S1[customer]
+        S2[payment]
+        S3[film]
+        S4[address · city · country]
+        S5[film_category · category]
+    end
+    subgraph staging["staging (views)"]
+        M1[stg_customers]
+        M2[stg_payments]
+        M3[stg_films]
+        M4[stg_addresses · cities · countries]
+        M5[stg_film_categories · categories]
+    end
+    subgraph intermediate["intermediate (views)"]
+        I1[int_addresses]
+        I2[int_film_categories]
+        I3[int_customer_payments]
+    end
+    subgraph marts["marts (tables)"]
+        D1[dim_customers]
+        D2[dim_films]
+        F1[fct_payments]
+    end
+    SEED[rating_descriptions]
+    S1 --> M1
+    S2 --> M2
+    S3 --> M3
+    S4 --> M4
+    S5 --> M5
+    M4 --> I1
+    M5 --> I2
+    M2 --> I3
+    M1 --> D1
+    I1 --> D1
+    I3 --> D1
+    M3 --> D2
+    I2 --> D2
+    SEED --> D2
+    M2 --> F1
     M1 --> F1
-    D1 --> T{{"tests · docs"}}
-    D2 --> T
-    F1 --> T
 ```
 
 ## The containers
@@ -93,11 +122,13 @@ dbt debug                        # expect: "All checks passed!"
 dbt run --select my_first_model
 ```
 
-## 2. Module 03 — seeds, sources & materializations
+## 2. Module 03 — seeds, sources, layers & materializations
 
 ```bash
 dbt seed                                       # load rating_descriptions.csv
-dbt run --select stg_customers dim_customers   # views + a dimension table
+dbt run --select staging                       # stg_* views (1:1 with sources)
+dbt run --select intermediate                  # int_* views (joins & rollups)
+dbt run --select dim_customers dim_films       # dimension tables
 dbt run --select fct_payments                  # incremental: full build (~51k rows)
 dbt run --select fct_payments                  # incremental: delta only (INSERT 0 0)
 ```
@@ -137,7 +168,8 @@ profiles.yml           connection; host is env-driven (container vs local)
 seeds/                 rating_descriptions.csv (a tiny static lookup)
 models/
   example/             my_first_model.sql  (hello world, table)
-  staging/             stg_customers/payments/rentals/films (views) + _staging.yml
+  staging/             stg_* views (1:1 with Pagila sources)
+  intermediate/        int_* views (joins & rollups between staging and marts)
   marts/               dim_customers, dim_films (tables), fct_payments (incremental)
 macros/                full_name.sql
 snapshots/             customers_snapshot.sql (SCD Type 2 on last_update)
