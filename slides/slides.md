@@ -282,9 +282,9 @@ services:
     image: postgres:18
     ports: ["15432:5432"]
 
-  whodb:               # browse raw data in the browser
-    image: clidey/whodb
-    ports: ["15424:8080"]
+  dbgate:              # browse raw data in the browser
+    image: dbgate/dbgate
+    ports: ["15424:3000"]
 
   dbt-docs:            # lineage + model docs
     build: ./docker/dbt
@@ -303,10 +303,10 @@ services:
 <div class="box-h">// Everything runs in a container</div>
 
 ```bash
-# build images + start postgres, whodb, dbt-docs
+# build images + start postgres, dbgate, dbt-docs
 docker compose up -d
 
-# browse Pagila at http://localhost:15424 (click the pre-loaded profile)
+# browse Pagila at http://localhost:15424 (no login, auto-connected)
 
 # drop into the dbt container…
 docker compose run --rm dbt bash

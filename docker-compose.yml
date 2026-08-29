@@ -20,19 +20,26 @@ services:
       retries: 5
     networks: [dbt_class_net]
 
-  # Browse Postgres in the browser with WhoDB — a modern next-gen explorer:
-  # interactive schema graph, data grid + inline edit, SQL scratchpad, CSV/Excel
-  # export. The Pagila connection is pre-loaded on the login page (just click it).
-  whodb:
-    image: clidey/whodb
-    container_name: dbt_class_whodb
+  # Browse Postgres in the browser with DbGate — modern data browser, SQL editor,
+  # and ER diagrams. Opens straight to a pre-defined "Pagila" connection (no login).
+  dbgate:
+    image: dbgate/dbgate
+    container_name: dbt_class_dbgate
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "15424:8080"   # http://localhost:15424
+      - "15424:3000"   # http://localhost:15424
     environment:
-      WHODB_POSTGRES: '[{"alias":"Pagila (dbt_class)","host":"postgres","user":"dbt","password":"dbt","database":"analytics","port":"5432"}]'
+      CONNECTIONS: pagila
+      LABEL_pagila: "Pagila (dbt_class)"
+      SERVER_pagila: postgres
+      USER_pagila: dbt
+      PASSWORD_pagila: dbt
+      PORT_pagila: "5432"
+      ENGINE_pagila: postgres@dbgate-plugin-postgres
+    volumes:
+      - dbgate-data:/root/.dbgate
     networks: [dbt_class_net]
 
   # dbt docs site — lineage graph + model/column docs at http://localhost:15480
@@ -77,6 +84,7 @@ services:
 
 volumes:
   pgdata: {}
+  dbgate-data: {}
 
 networks:
   dbt_class_net:

@@ -23,13 +23,13 @@ flowchart LR
         subgraph pg["postgres:18"]
             raw[("Pagila public schema<br/>customer · rental<br/>payment · film")]
         end
-        whodb["WhoDB :15424<br/>tables · schema graph · SQL"]
+        dbgate["DbGate :15424<br/>tables · SQL · ER diagram"]
         docs["dbt-docs :15480<br/>lineage · model docs"]
     end
     subgraph ondemand["docker compose run dbt"]
         dbt["dbt Core<br/>run · test · build"]
     end
-    whodb -->|browse| raw
+    dbgate -->|browse| raw
     docs -->|catalog| raw
     dbt -->|reads / writes SQL| raw
 ```
@@ -86,17 +86,16 @@ flowchart LR
 | Service | What it is | URL |
 |---|---|---|
 | `postgres` | The warehouse (Postgres 18). Pagila is auto-loaded into `public` on first boot. | `localhost:15432` |
-| `whodb` | [WhoDB](https://github.com/clidey/whodb) — a next-gen browser UI: browse tables & data, an **interactive schema graph**, SQL scratchpad, CSV/Excel export. The Pagila connection is pre-loaded (just click it on the login page). | http://localhost:15424 |
+| `dbgate` | [DbGate](https://github.com/dbgate/dbgate) — a modern browser UI: data grid with per-column filters, SQL editor, ER diagrams. Opens **straight to a pre-defined `Pagila` connection (no login)**, and shows the partitioned `payment` table as **one** (51k rows). | http://localhost:15424 |
 | `dbt-docs` | dbt docs site — model descriptions, column metadata, interactive lineage graph. Regenerates on container start. | http://localhost:15480 |
 | `dbt` | dbt Core CLI for labs. Invoked on demand with `docker compose run` (profile `dbt`; not started by plain `up`). | — |
 
 ## 0. Bring up the stack
 
 ```bash
-docker compose up -d          # postgres + whodb + dbt-docs
+docker compose up -d          # postgres + dbgate + dbt-docs
 
-# Browse the raw Pagila data — tables, data grid, schema graph
-# (click the pre-loaded "Pagila (dbt_class)" profile on the login page):
+# Browse the raw Pagila data — opens straight to the "Pagila" connection, no login:
 open http://localhost:15424
 
 # dbt docs / lineage (after models are built, restart to refresh):
@@ -160,7 +159,7 @@ docker exec -it dbt_class_pg psql -U dbt -d analytics \
 ## Project layout
 
 ```
-docker-compose.yml     postgres + whodb + dbt-docs + dbt (on-demand)
+docker-compose.yml     postgres + dbgate + dbt-docs + dbt (on-demand)
 docker/init/           01_setup.sql + Pagila dump -> loaded into public (dbt SOURCES)
 docker/dbt/Dockerfile  the dbt Core + Postgres adapter image
 dbt_project.yml        project config (paths, vars, post-hook, materializations)

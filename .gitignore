@@ -16,3 +16,6 @@ slides/.slidev/
 
 # os / editor
 .DS_Store
+
+# raw class notes — keep local only
+material.txt
